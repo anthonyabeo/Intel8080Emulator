@@ -1,5 +1,5 @@
 [package]
-name = "emulatorIntel8080"
+name = "emulator_intel8080"
 version = "0.1.0"
 authors = ["Abeo Anthony, A. <anthonyabeo@gmail.com>"]
 edition = "2018"
