@@ -1,3 +1,6 @@
+#[cfg(test)]
+pub mod tests;
+
 pub mod cpu {
     pub struct ConditionFlags {
         pub carry: u8,
@@ -82,19 +85,34 @@ pub mod intel8080 {
             
         }
         
-        pub fn emulate(&self) {
-            while self.pc < self.memory.len() {
-                let opcode = self.memory[self.pc];
-                match opcode {
-                    0x00 => {}
-                    0x01 => {}
-                    0x02 => {}
+        pub fn emulate(&mut self) {
+            while self.memory[self.pc] != 0x76 { // while opcode != HLT (0x76)
+                match self.memory[self.pc] {
+                    0x00 => { self.pc += 1; }
+                    0x01 => {
+                        self.regs.b = self.memory[self.pc + 2];
+                        self.regs.c = self.memory[self.pc + 1];
+
+                        self.pc += 3;
+                    }
+                    0x02 => {
+                        // get the content of register pair B and C
+                        // format them into an address in LE format.
+                        let addr = (((self.regs.b as u16) << 8) | 
+                                    (self.regs.c as u16)) as usize;
+
+                        // get the value in the A register and store this
+                        // value at the address created in the previos step.
+                        self.memory[addr] = self.regs.a;
+
+                        self.pc += 1;
+                    }
                     0x03 => {}
                     0x04 => {}
                     0x05 => {}
                     0x06 => {}
                     0x07 => {}
-                    0x08 => {}
+                    0x08 => { self.pc += 1; }
                     0x09 => {}
                     0x0A => {}
                     0x0B => {}
@@ -104,7 +122,7 @@ pub mod intel8080 {
                     0x0F => {}
 
 
-                    0x10 => {}
+                    0x10 => { self.pc += 1; }
                     0x11 => {}
                     0x12 => {}
                     0x13 => {}
@@ -112,7 +130,7 @@ pub mod intel8080 {
                     0x15 => {}
                     0x16 => {}
                     0x17 => {}
-                    0x18 => {}
+                    0x18 => { self.pc += 1; }
                     0x19 => {}
                     0x1A => {}
                     0x1B => {}
@@ -130,7 +148,7 @@ pub mod intel8080 {
                     0x25 => {}
                     0x26 => {}
                     0x27 => {}
-                    0x28 => {}
+                    0x28 => { self.pc += 1; }
                     0x29 => {}
                     0x2A => {}
                     0x2B => {}
@@ -140,7 +158,7 @@ pub mod intel8080 {
                     0x2F => {}
 
 
-                    0x30 => {}
+                    0x30 => { self.pc += 1; }
                     0x31 => {}
                     0x32 => {}
                     0x33 => {}
@@ -148,7 +166,7 @@ pub mod intel8080 {
                     0x35 => {}
                     0x36 => {}
                     0x37 => {}
-                    0x38 => {}
+                    0x38 => { self.pc += 1; }
                     0x39 => {}
                     0x3A => {}
                     0x3B => {}
