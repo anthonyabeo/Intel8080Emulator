@@ -35,12 +35,8 @@ pub mod cpu {
     impl Register {
         pub fn new() -> Register {
             Register {
-                a: 0_u8,
-                b: 0_u8,
-                c: 0_u8,
-                d: 0_u8,
-                e: 0_u8,
-                h: 0_u8,
+                a: 0_u8, b: 0_u8, c: 0_u8, 
+                d: 0_u8, e: 0_u8, h: 0_u8, 
                 l: 0_u8
             }
         }
@@ -88,26 +84,38 @@ pub mod intel8080 {
         pub fn emulate(&mut self) {
             while self.memory[self.pc] != 0x76 { // while opcode != HLT (0x76)
                 match self.memory[self.pc] {
-                    0x00 => { self.pc += 1; }
-                    0x01 => {
+                    0x00 => { self.pc += 1; } // NOP
+                    0x01 => { // LXI B
                         self.regs.b = self.memory[self.pc + 2];
                         self.regs.c = self.memory[self.pc + 1];
 
                         self.pc += 3;
                     }
-                    0x02 => {
+                    0x02 => { // STAX B
                         // get the content of register pair B and C
                         // format them into an address in LE format.
                         let addr = (((self.regs.b as u16) << 8) | 
                                     (self.regs.c as u16)) as usize;
 
                         // get the value in the A register and store this
-                        // value at the address created in the previos step.
+                        // value at the address created in the previous step.
                         self.memory[addr] = self.regs.a;
 
                         self.pc += 1;
                     }
-                    0x03 => {}
+                    0x03 => { // INX B
+                        // get the content of register pair B and C format them into 
+                        // an address in LE format and increment the value from the 
+                        // previous step by one. 
+                        let value = (((self.regs.b as u16) << 8) | (self.regs.c as u16)) + 1;
+
+                        // split the new value into two. The LO byte is assigned to
+                        // register C and the HO byte is assigned to register B. 
+                        self.regs.b = ((value & 0b1111111100000000) >> 8) as u8;
+                        self.regs.c = (value & 0b0000000011111111) as u8;
+
+                        self.pc += 1;
+                    }
                     0x04 => {}
                     0x05 => {}
                     0x06 => {}
