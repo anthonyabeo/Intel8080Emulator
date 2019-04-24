@@ -138,7 +138,29 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x05 => {}
+                    0x05 => {
+                        // increment the value in register B by 1.
+                        let result = self.regs.b - 1;
+
+                        // this instruction affects all the condition flags except 
+                        // the carry flag.
+                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                        self.flags.parity = {
+                            let mut counter = 0;
+                            let mut r = result;
+                            for _ in 0..8 {
+                                if (r & 0x01) == 1 { counter += 1; }
+                                r >>= 1;
+                            }
+                            
+                            ((counter & 0x01) == 0) as u8
+                        };
+
+                        self.regs.b = result;
+
+                        self.pc += 1;
+                    }
                     0x06 => {}
                     0x07 => {}
                     0x08 => { self.pc += 1; }
