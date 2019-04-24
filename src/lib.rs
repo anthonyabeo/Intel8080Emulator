@@ -51,7 +51,6 @@ pub mod intel8080 {
 
     use crate::cpu::{ConditionFlags, Register};
 
-
     pub struct Intel8080 {
         pub regs: Register,
         pub flags: ConditionFlags,
@@ -111,12 +110,34 @@ pub mod intel8080 {
 
                         // split the new value into two. The LO byte is assigned to
                         // register C and the HO byte is assigned to register B. 
-                        self.regs.b = ((value & 0b1111111100000000) >> 8) as u8;
-                        self.regs.c = (value & 0b0000000011111111) as u8;
+                        self.regs.b = ((value & 0xff00) >> 8) as u8;
+                        self.regs.c = (value & 0x00ff) as u8;
 
                         self.pc += 1;
                     }
-                    0x04 => {}
+                    0x04 => { // INR B
+                        // increment the value in register B by 1.
+                        let result = self.regs.b + 1;
+
+                        // this instruction affects all the condition flags except 
+                        // the carry flag.
+                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                        self.flags.parity = {
+                            let mut counter = 0;
+                            let mut r = result;
+                            for _ in 0..8 {
+                                if (r & 0x01) == 1 { counter += 1; }
+                                r >>= 1;
+                            }
+                            
+                            ((counter & 0x01) == 0) as u8
+                        };
+
+                        self.regs.b = result;
+
+                        self.pc += 1;
+                    }
                     0x05 => {}
                     0x06 => {}
                     0x07 => {}

@@ -37,3 +37,20 @@ fn emulate_opcodes_3() {
     assert_eq!(machine.regs.b, 0x39);
     assert_eq!(machine.regs.c, 0x00);
 }
+
+#[test]
+fn emulate_opcode_4() {
+    let mut machine = Intel8080::new();
+    machine.regs.b = 0x99;
+    machine.memory = vec![
+        4,
+        0x76
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.regs.b, 0x9A);
+    assert_eq!(machine.flags.zero, 0);
+    assert_eq!(machine.flags.sign, 0);
+    assert_eq!(machine.flags.parity, 1);
+}
