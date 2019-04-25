@@ -267,10 +267,90 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x0C => {}
-                    0x0D => {}
-                    0x0E => {}
-                    0x0F => {}
+                    0x0C => {
+                        // INSTRUCTION: INR C
+                        // DESCRIPTION: 
+                        //      Increment register C by 1;
+
+                        // increment the value in register C by 1.
+                        let result = self.regs.c + 1;
+
+                        // this instruction affects all the condition flags except 
+                        // the carry flag.
+                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                        self.flags.parity = {
+                            let mut counter = 0;
+                            let mut r = result;
+                            for _ in 0..8 {
+                                if (r & 0x01) == 1 { counter += 1; }
+                                r >>= 1;
+                            }
+                            
+                            ((counter & 0x01) == 0) as u8
+                        };
+                        
+                        // load register C with the result of the computation
+                        self.regs.c = result;
+
+                        self.pc += 1;
+                    }
+                    0x0D => {
+                        // INSTRUCTION: DCR C
+                        // DESCRIPTION:
+                        //      The value in register C is decremented by 1;
+
+                        // decrement the value in register C by 1.
+                        let result = self.regs.c - 1;
+
+                        // this instruction affects all the condition flags except 
+                        // the carry flag.
+                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                        self.flags.parity = {
+                            let mut counter = 0;
+                            let mut r = result;
+                            for _ in 0..8 {
+                                if (r & 0x01) == 1 { counter += 1; }
+                                r >>= 1;
+                            }
+                            
+                            ((counter & 0x01) == 0) as u8
+                        };
+                        
+                        // load register C with the result of the computation
+                        self.regs.c = result;
+
+                        self.pc += 1;
+                    }
+                    0x0E => {
+                        // INSTRUCTION: MVI C
+                        // DESCRIPTION:
+                        //      the immediate data byte is stored in register C. 
+                        //      No condition flags are affected. 
+
+                        // load the next byte into register C
+                        self.regs.c = self.memory[self.pc + 1];
+
+                        self.pc += 2;
+                    }
+                    0x0F => {
+                        // INSTRUCTION: RRC
+                        // DESCRIPTION:
+                        //      The contents of the accumulator are rotated one bit position to 
+                        //      the right, with the low-order bit being transferred to the 
+                        //      high-order bit position of the accumulator.
+
+                        // compute carry and use it to compute the new value to
+                        // be assigned to the accumulator (A) register.
+                        let carry = (self.regs.a & 0x01) as u8;
+                        self.regs.a = ((self.regs.a >> 1) | (carry << 7)) as u8;
+
+                        // The Carry bit is set equal to the high-order bit of the accumulator.
+                        self.flags.carry = carry;
+
+                        self.pc += 1;
+                    }
 
 
                     0x10 => { self.pc += 1; }
