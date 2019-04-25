@@ -84,13 +84,23 @@ pub mod intel8080 {
             while self.memory[self.pc] != 0x76 { // while opcode != HLT (0x76)
                 match self.memory[self.pc] {
                     0x00 => { self.pc += 1; } // NOP
-                    0x01 => { // LXI B
+                    0x01 => { 
+                        // INSTRUCTION: LXI B
+                        // DESCRIPTION: 
+                        //      Load 2 next bytes into registers B and C. 
+
+                        // load bytes into register B and C
                         self.regs.b = self.memory[self.pc + 2];
                         self.regs.c = self.memory[self.pc + 1];
 
                         self.pc += 3;
                     }
-                    0x02 => { // STAX B
+                    0x02 => { 
+                        // INSTRUCTION: STAX B
+                        // DESCRIPTION: 
+                        //      The contents of the accumulator are stored in the memory 
+                        //      location addressed by register pair BC
+
                         // get the content of register pair B and C
                         // format them into an address in LE format.
                         let addr = (((self.regs.b as u16) << 8) | 
@@ -102,7 +112,11 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x03 => { // INX B
+                    0x03 => { 
+                        // INSTRUCTION: INX B
+                        // DESCRIPTION: 
+                        //      The 16-bit number held in register pair BC is incremented by one.
+
                         // get the content of register pair B and C format them into 
                         // an address in LE format and increment the value from the 
                         // previous step by one. 
@@ -115,7 +129,11 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x04 => { // INR B
+                    0x04 => { 
+                        // INSTRUCTION: INR B
+                        // DESCRIPTION: 
+                        //      Increment register B by 1;
+
                         // increment the value in register B by 1.
                         let result = self.regs.b + 1;
 
@@ -133,13 +151,18 @@ pub mod intel8080 {
                             
                             ((counter & 0x01) == 0) as u8
                         };
-
+                        
+                        // load register B with the result of the computation
                         self.regs.b = result;
 
                         self.pc += 1;
                     }
                     0x05 => {
-                        // increment the value in register B by 1.
+                        // INSTRUCTION: DCR B
+                        // DESCRIPTION:
+                        //      The value in register B is decremented by 1;
+
+                        // decrement the value in register B by 1.
                         let result = self.regs.b - 1;
 
                         // this instruction affects all the condition flags except 
@@ -156,22 +179,32 @@ pub mod intel8080 {
                             
                             ((counter & 0x01) == 0) as u8
                         };
-
+                        
+                        // load register B with the result of the computation
                         self.regs.b = result;
 
                         self.pc += 1;
                     }
-                    0x06 => { // MVI B
-                        // the immediate data byte is stored in register B. 
-                        // No condition flags are affected. 
+                    0x06 => { 
+                        // INSTRUCTION: MVI B
+                        // DESCRIPTION:
+                        //      the immediate data byte is stored in register B. 
+                        //      No condition flags are affected. 
+
+                        // load the next byte into register B
                         self.regs.b = self.memory[self.pc + 1];
 
                         self.pc += 2;
                     }
-                    0x07 => { // RLC
-                        // The contents of the accumulator are rotated one bit position to 
-                        // the left, with the highorder bit being transferred to the 
-                        // low-order bit position of the accumulator.
+                    0x07 => { 
+                        // INSTRUCTION: RLC
+                        // DESCRIPTION:
+                        //      The contents of the accumulator are rotated one bit position to 
+                        //      the left, with the high-order bit being transferred to the 
+                        //      low-order bit position of the accumulator.
+
+                        // compute carry and use it to compute the new value to
+                        // be assigned to the accumulator (A) register.
                         let carry = ((self.regs.a & 0x80) >> 7) as u8;
                         self.regs.a = ((self.regs.a << 1) | carry) as u8;
 
@@ -181,10 +214,12 @@ pub mod intel8080 {
                         self.pc += 1;
                     }
                     0x08 => { self.pc += 1; }
-                    0x09 => { // DAD B
-                        // The 16-bit number in the specified register pair is added to the 
-                        // 16-bit number held in the Hand L registers using two's complement 
-                        // arithmetic. The result replaces the contents of the Hand L registers. 
+                    0x09 => { 
+                        // INSTRUCTION: DAD B
+                        // DESCRIPTION:
+                        //      The 16-bit number in the specified register pair is added to the 
+                        //      16-bit number held in the Hand L registers using two's complement 
+                        //      arithmetic. The result replaces the contents of the Hand L registers. 
 
                         // create the value of the register pairs for BC and HL
                         let bc = ((self.regs.b as u32) << 8) | (self.regs.c as u32);
@@ -201,8 +236,37 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x0A => {}
-                    0x0B => {}
+                    0x0A => {
+                        // INSTRUCTION: LDAX B
+                        // DESCRIPTION: 
+                        //      The contents of the memory location addressed by registers 
+                        //      B and C, replace the contents of the accumulator.
+                        
+                        // compute the address to read from.
+                        let addr = (((self.regs.b as u16) << 8) | ((self.regs.c) as u16)) as usize;
+
+                        // load the value at that address into register A
+                        self.regs.a = self.memory[addr];
+
+                        self.pc += 1;
+                    }
+                    0x0B => {
+                        // INSTRUCTION: DCX B
+                        // DESCRIPTION: 
+                        //      The 16-bit number held in the specified register pair is decremented by one.
+  
+                        // get the content of register pair B and C format them into 
+                        // an address in LE format and decrement the value from the 
+                        // previous step by one. 
+                        let value = (((self.regs.b as u16) << 8) | (self.regs.c as u16)) - 1;
+
+                        // split the new value into two. The LO byte is assigned to
+                        // register C and the HO byte is assigned to register B. 
+                        self.regs.b = ((value & 0xff00) >> 8) as u8;
+                        self.regs.c = (value & 0x00ff) as u8;
+
+                        self.pc += 1;
+                    }
                     0x0C => {}
                     0x0D => {}
                     0x0E => {}
