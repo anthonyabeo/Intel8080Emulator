@@ -181,7 +181,26 @@ pub mod intel8080 {
                         self.pc += 1;
                     }
                     0x08 => { self.pc += 1; }
-                    0x09 => {}
+                    0x09 => { // DAD B
+                        // The 16-bit number in the specified register pair is added to the 
+                        // 16-bit number held in the Hand L registers using two's complement 
+                        // arithmetic. The result replaces the contents of the Hand L registers. 
+
+                        // create the value of the register pairs for BC and HL
+                        let bc = ((self.regs.b as u32) << 8) | (self.regs.c as u32);
+                        let hl = ((self.regs.h as u32) << 8) | (self.regs.l as u32);
+
+                        // add the values in the register pairs BC and HL. 
+                        // put the HO byte into H and the LO bytes into L.
+                        let result =  bc + hl;
+                        self.regs.h = ((result & 0x0000ff00) >> 8) as u8;
+                        self.regs.l = (result & 0x000000ff) as u8;
+
+                        // set the carry flag
+                        self.flags.carry = ((result & 0xffff0000) > 0) as u8;
+
+                        self.pc += 1;
+                    }
                     0x0A => {}
                     0x0B => {}
                     0x0C => {}

@@ -96,3 +96,40 @@ fn emulate_opcode_7() {
     assert_eq!(machine.regs.a, 0xe5);
     assert_eq!(machine.flags.carry, 1);
 }
+
+#[test]
+fn emulate_9() {
+    let mut machine = Intel8080::new();
+    machine.regs.b = 0x33;
+    machine.regs.c = 0x9f;
+    machine.regs.h = 0xa1;
+    machine.regs.l = 0x7b;
+
+    machine.memory = vec![
+        9,
+        0x76
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.regs.h, 0xd5);
+    assert_eq!(machine.regs.l, 0x1a);
+    assert_eq!(machine.flags.carry, 0);
+
+    let mut machine = Intel8080::new();
+    machine.regs.b = 0xff;
+    machine.regs.c = 0xff;
+    machine.regs.h = 0x00;
+    machine.regs.l = 0x01;
+
+    machine.memory = vec![
+        9,
+        0x76
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.regs.h, 0x00);
+    assert_eq!(machine.regs.l, 0x00);
+    assert_eq!(machine.flags.carry, 1);
+}
