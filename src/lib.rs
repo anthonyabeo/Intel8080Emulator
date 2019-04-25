@@ -161,8 +161,25 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x06 => {}
-                    0x07 => {}
+                    0x06 => { // MVI B
+                        // the immediate data byte is stored in register B. 
+                        // No condition flags are affected. 
+                        self.regs.b = self.memory[self.pc + 1];
+
+                        self.pc += 2;
+                    }
+                    0x07 => { // RLC
+                        // The contents of the accumulator are rotated one bit position to 
+                        // the left, with the highorder bit being transferred to the 
+                        // low-order bit position of the accumulator.
+                        let carry = ((self.regs.a & 0x80) >> 7) as u8;
+                        self.regs.a = ((self.regs.a << 1) | carry) as u8;
+
+                        // The Carry bit is set equal to the high-order bit of the accumulator.
+                        self.flags.carry = carry;
+
+                        self.pc += 1;
+                    }
                     0x08 => { self.pc += 1; }
                     0x09 => {}
                     0x0A => {}
