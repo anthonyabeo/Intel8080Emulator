@@ -234,3 +234,47 @@ fn emulate_opcode_0a_and_0b() {
     assert_eq!(machine.regs.b, 0);
     assert_eq!(machine.regs.c, 4);
 }
+
+#[test]
+fn emulate_opcode_0x17() {
+    let mut machine = Intel8080::new();
+    machine.regs.a = 0xb5;
+    machine.memory = vec![
+        0x17, // opcode
+        0x76
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.regs.a, 0x6a);
+    assert_eq!(machine.flags.carry, 1);
+
+    let mut machine = Intel8080::new();
+    machine.regs.a = 0xb5;
+    machine.flags.carry = 1;
+    machine.memory = vec![
+        0x17, // opcode
+        0x76
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.regs.a, 0xea);
+    assert_eq!(machine.flags.carry, 1);
+}
+
+#[test]
+fn emulate_0x1f() {
+    let mut machine = Intel8080::new();
+    machine.regs.a = 0x6a;
+    machine.flags.carry = 1;
+    machine.memory = vec![
+        0x1f, // opcode
+        0x76
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.regs.a, 0xb5);
+    assert_eq!(machine.flags.carry, 0);
+}
