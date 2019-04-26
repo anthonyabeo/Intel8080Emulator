@@ -278,3 +278,76 @@ fn emulate_0x1f() {
     assert_eq!(machine.regs.a, 0xb5);
     assert_eq!(machine.flags.carry, 0);
 }
+
+#[test]
+fn emulate_shld() {
+    // opcode SHLD
+    let mut machine = Intel8080::new();
+    machine.regs.h = 0xae;
+    machine.regs.l = 0x29;
+
+    machine.memory = vec![
+        0x22,
+        4,
+        0,
+        0x76,
+        0,
+        0
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.memory[4], 0x29);
+    assert_eq!(machine.memory[5], 0xae);
+
+    // opcode LHLD
+    let mut machine = Intel8080::new();
+    machine.regs.h = 0xae;
+    machine.regs.l = 0x29;
+
+    machine.memory = vec![
+        0x22,
+        4,
+        0,
+        0x76,
+        0x29,
+        0xae
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.regs.l, 0x29);
+    assert_eq!(machine.regs.h, 0xae);
+}
+
+#[test]
+fn emulate_cma() {
+    let mut machine = Intel8080::new();
+    machine.regs.a = 0x51;
+
+    machine.memory = vec![
+        0x2f,
+        0x76
+    ];
+
+    machine.emulate();
+    
+    assert_eq!(machine.regs.a, 0xae);
+}
+
+#[test]
+fn emulate_daa() {
+    let mut machine = Intel8080::new();
+    machine.regs.a = 0x9b;
+
+    machine.memory = vec![
+        0x27,
+        0x76
+    ];
+
+    machine.emulate();
+    
+    assert_eq!(machine.regs.a, 1);
+    assert_eq!(machine.flags.carry, 1);
+    assert_eq!(machine.flags.aux_carry, 1);
+}

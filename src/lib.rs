@@ -623,22 +623,267 @@ pub mod intel8080 {
                     }
 
 
-                    0x20 => {}
-                    0x21 => {}
-                    0x22 => {}
-                    0x23 => {}
-                    0x24 => {}
-                    0x25 => {}
-                    0x26 => {}
-                    0x27 => {}
+                    0x20 => { self.pc += 1; }
+                    0x21 => {
+                        // INSTRUCTION: LXI H
+                        // DESCRIPTION: 
+                        //      Load the next two bytes into registers H and L. 
+
+                        // load bytes into register H and L
+                        self.regs.h = self.memory[self.pc + 2];
+                        self.regs.l = self.memory[self.pc + 1];
+
+                        self.pc += 3;
+                    }
+                    0x22 => {
+                        // INSTRUCTION: SHLD
+                        // DESCRIPTION: 
+                        //      The contents of the L register are stored at the memory address 
+                        //      formed by concatenati ng HI AD 0 with LOW ADO. The contents of 
+                        //      the H register are stored at the next higher memory address.
+
+                        let mut addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                                        (self.memory[self.pc + 1] as u16)) as usize;
+
+                        self.memory[addr] = self.regs.l; addr += 1;
+                        self.memory[addr] = self.regs.h;
+
+                        self.pc += 3;
+                    }
+                    0x23 => {
+                        // INSTRUCTION: INX H
+                        // DESCRIPTION: 
+                        //      The 16-bit number held in register pair HL is incremented by one.
+
+                        // get the content of register pair HL format them into 
+                        // an address in LE format and increment the value from the 
+                        // previous step by one. 
+                        let value = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) + 1;
+
+                        // split the new value into two. The LO byte is assigned to
+                        // register L and the HO byte is assigned to register H. 
+                        self.regs.h = ((value & 0xff00) >> 8) as u8;
+                        self.regs.l = (value & 0x00ff) as u8;
+
+                        self.pc += 1;
+                    }
+                    0x24 => {
+                        // INSTRUCTION: INR H
+                        // DESCRIPTION: 
+                        //      Increment register H by 1;
+
+                        // increment the value in register H by 1.
+                        let result = self.regs.h + 1;
+
+                        // this instruction affects all the condition flags except 
+                        // the carry flag.
+                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                        self.flags.parity = {
+                            let mut counter = 0;
+                            let mut r = result;
+                            for _ in 0..8 {
+                                if (r & 0x01) == 1 { counter += 1; }
+                                r >>= 1;
+                            }
+                            
+                            ((counter & 0x01) == 0) as u8
+                        };
+                        
+                        // load register H with the result of the computation
+                        self.regs.h = result;
+
+                        self.pc += 1;
+                    }
+                    0x25 => {
+                        // INSTRUCTION: DCR H
+                        // DESCRIPTION:
+                        //      The value in register H is decremented by 1;
+
+                        // decrement the value in register H by 1.
+                        let result = self.regs.h - 1;
+
+                        // this instruction affects all the condition flags except 
+                        // the carry flag.
+                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                        self.flags.parity = {
+                            let mut counter = 0;
+                            let mut r = result;
+                            for _ in 0..8 {
+                                if (r & 0x01) == 1 { counter += 1; }
+                                r >>= 1;
+                            }
+                            
+                            ((counter & 0x01) == 0) as u8
+                        };
+                        
+                        // load register H with the result of the computation
+                        self.regs.h = result;
+
+                        self.pc += 1;
+                    }
+                    0x26 => {
+                        // INSTRUCTION: MVI H
+                        // DESCRIPTION:
+                        //      the immediate data byte is stored in register H. 
+                        //      No condition flags are affected. 
+
+                        // load the next byte into register H
+                        self.regs.h = self.memory[self.pc + 1];
+
+                        self.pc += 2;
+                    }
+                    0x27 => {
+                        // INSTRUCTION: DAA
+                        // DESCRIPTION:
+                        
+                        if (self.regs.a & 0x0f) > 9 || self.flags.aux_carry == 1 {
+                            self.regs.a += 6;
+                            self.flags.aux_carry = 1;
+                        }
+
+                        let mut ho_nibble = (self.regs.a & 0xf0) >> 4;
+                        if ho_nibble > 9 || self.flags.carry == 1 {
+                            ho_nibble += 6;
+                            self.regs.a = (self.regs.a & 0x0f) | (ho_nibble << 4);
+                            self.flags.carry = 1;
+                        }
+
+                        self.pc += 1;
+                    }
                     0x28 => { self.pc += 1; }
-                    0x29 => {}
-                    0x2A => {}
-                    0x2B => {}
-                    0x2C => {}
-                    0x2D => {}
-                    0x2E => {}
-                    0x2F => {}
+                    0x29 => {
+                        // INSTRUCTION: DAD H
+                        // DESCRIPTION:
+                        //      The 16-bit number in the specified register pair is added to the 
+                        //      16-bit number held in the H and L registers using two's complement 
+                        //      arithmetic. The result replaces the contents in the H and L registers. 
+
+                        // create the value of the register pairs HL
+                        let hl = ((self.regs.h as u32) << 8) | (self.regs.l as u32);
+
+                        // add the values in the register pairs BC and HL. 
+                        // put the HO byte into H and the LO bytes into L.
+                        let result =  hl << 1;
+                        self.regs.h = ((result & 0x0000ff00) >> 8) as u8;
+                        self.regs.l = (result & 0x000000ff) as u8;
+
+                        // set the carry flag
+                        self.flags.carry = ((result & 0xffff0000) > 0) as u8;
+
+                        self.pc += 1;
+                    }
+                    0x2A => {
+                        // INSTRUCTION: LHLD
+                        // DESCRIPTION: 
+                        //      The byte at the memory address formed by concatenating HI ADD 
+                        //      with LOW ADD replaces the contents of the L register. The byte 
+                        //      at the next higher memory address replaces the contents of the 
+                        //      H register.
+
+                        let mut addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                                        (self.memory[self.pc + 1] as u16)) as usize;
+                        
+                        self.regs.l = self.memory[addr]; addr += 1;
+                        self.regs.h = self.memory[addr];
+
+                        self.pc += 3;
+                    }
+                    0x2B => {
+                        // INSTRUCTION: DCX H
+                        // DESCRIPTION: 
+                        //      The 16-bit number held in the register pair HL is decremented by one.
+  
+                        // get the content of register pair HL format them into 
+                        // an address in LE format and decrement the value from the 
+                        // previous step by one. 
+                        let value = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) - 1;
+
+                        // split the new value into two. The LO byte is assigned to
+                        // register L and the HO byte is assigned to register H. 
+                        self.regs.h = ((value & 0xff00) >> 8) as u8;
+                        self.regs.l = (value & 0x00ff) as u8;
+
+                        self.pc += 1;
+                    }
+                    0x2C => {
+                        // INSTRUCTION: INR L
+                        // DESCRIPTION: 
+                        //      Increment register L by 1;
+
+                        // increment the value in register L by 1.
+                        let result = self.regs.l + 1;
+
+                        // this instruction affects all the condition flags except 
+                        // the carry flag.
+                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                        self.flags.parity = {
+                            let mut counter = 0;
+                            let mut r = result;
+                            for _ in 0..8 {
+                                if (r & 0x01) == 1 { counter += 1; }
+                                r >>= 1;
+                            }
+                            
+                            ((counter & 0x01) == 0) as u8
+                        };
+                        
+                        // load register L with the result of the computation
+                        self.regs.l = result;
+
+                        self.pc += 1;
+                    }
+                    0x2D => {
+                        // INSTRUCTION: DCR L
+                        // DESCRIPTION:
+                        //      The value in register L is decremented by 1;
+
+                        // decrement the value in register L by 1.
+                        let result = self.regs.l - 1;
+
+                        // this instruction affects all the condition flags except 
+                        // the carry flag.
+                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                        self.flags.parity = {
+                            let mut counter = 0;
+                            let mut r = result;
+                            for _ in 0..8 {
+                                if (r & 0x01) == 1 { counter += 1; }
+                                r >>= 1;
+                            }
+                            
+                            ((counter & 0x01) == 0) as u8
+                        };
+                        
+                        // load register L with the result of the computation
+                        self.regs.l = result;
+
+                        self.pc += 1;
+                    }
+                    0x2E => {
+                        // INSTRUCTION: MVI L
+                        // DESCRIPTION:
+                        //      the immediate data byte is stored in register L. 
+                        //      No condition flags are affected. 
+
+                        // load the next byte into register L
+                        self.regs.l = self.memory[self.pc + 1];
+
+                        self.pc += 2;
+                    }
+                    0x2F => {
+                        // INSTRUCTION: CMA
+                        // DESCRIPTION: 
+                        //      Each bit of the contents of the accumulator is complemented 
+                        //      (producing the one's complement). 
+
+                        self.regs.a = !self.regs.a;
+
+                        self.pc += 1;
+                    }
 
 
                     0x30 => { self.pc += 1; }
