@@ -750,6 +750,19 @@ pub mod intel8080 {
                             self.flags.carry = 1;
                         }
 
+                        self.flags.zero = ((self.regs.a as u16 & 0xffff) == 0) as u8;
+                        self.flags.sign = ((self.regs.a as u16 & 0x8000) != 0) as u8;
+                        self.flags.parity = {
+                            let mut counter = 0;
+                            let mut r = self.regs.a;
+                            for _ in 0..8 {
+                                if (r & 0x01) == 1 { counter += 1; }
+                                r >>= 1;
+                            }
+                            
+                            ((counter & 0x01) == 0) as u8
+                        };
+
                         self.pc += 1;
                     }
                     0x28 => { self.pc += 1; }

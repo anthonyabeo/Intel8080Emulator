@@ -346,8 +346,11 @@ fn emulate_daa() {
     ];
 
     machine.emulate();
-    
+
     assert_eq!(machine.regs.a, 1);
     assert_eq!(machine.flags.carry, 1);
     assert_eq!(machine.flags.aux_carry, 1);
+    assert_eq!(machine.flags.zero, 0);
+    assert_eq!(machine.flags.sign, 0);
+    assert_eq!(machine.flags.parity, 0);
 }
