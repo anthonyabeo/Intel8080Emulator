@@ -924,19 +924,189 @@ pub mod intel8080 {
 
                         self.pc += 3;
                     }
-                    0x33 => {}
-                    0x34 => {}
-                    0x35 => {}
-                    0x36 => {}
-                    0x37 => {}
+                    0x33 => {
+                        // INSTRUCTION: INX SP
+                        // DESCRIPTION: 
+                        //      The 16-bit number held in register SP is incremented by one.
+
+                        self.sp += 1;
+
+                        self.pc += 1;
+                    }
+                    0x34 => {
+                        // INSTRUCTION: INR M
+                        // DESCRIPTION: 
+
+                        let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+
+                        let result = self.memory[addr] + 1;
+
+                        // this instruction affects all the condition flags except 
+                        // the carry flag.
+                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                        self.flags.parity = {
+                            let mut counter = 0;
+                            let mut r = result;
+                            for _ in 0..8 {
+                                if (r & 0x01) == 1 { counter += 1; }
+                                r >>= 1;
+                            }
+                            
+                            ((counter & 0x01) == 0) as u8
+                        };
+                        
+                        // load register B with the result of the computation
+                        self.memory[addr] = result;
+
+                        self.pc += 1;
+                    }
+                    0x35 => {
+                        // INSTRUCTION: DCR M
+                        let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+
+                        let result = self.memory[addr] - 1;
+
+                        // this instruction affects all the condition flags except 
+                        // the carry flag.
+                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                        self.flags.parity = {
+                            let mut counter = 0;
+                            let mut r = result;
+                            for _ in 0..8 {
+                                if (r & 0x01) == 1 { counter += 1; }
+                                r >>= 1;
+                            }
+                            
+                            ((counter & 0x01) == 0) as u8
+                        };
+                        
+                        // load register B with the result of the computation
+                        self.memory[addr] = result;
+
+                        self.pc += 1;
+                    }
+                    0x36 => {
+                        // INSTRUCTION: MVI M
+
+                        let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                        self.memory[addr] = self.memory[self.pc + 1];
+
+                        self.pc += 2;
+                    }
+                    0x37 => {
+                        // INSTRUCTION: STC
+                        self.flags.carry = 1;
+
+                        self.pc += 1;
+                    }
                     0x38 => { self.pc += 1; }
-                    0x39 => {}
-                    0x3A => {}
-                    0x3B => {}
-                    0x3C => {}
-                    0x3D => {}
-                    0x3E => {}
-                    0x3F => {}
+                    0x39 => {
+                        // INSTRUCTION: DAD SP
+
+                        // create the value of the register pairs for BC and HL
+                        let hl = ((self.regs.h as u32) << 8) | (self.regs.l as u32);
+
+                        // add the values in the register pairs BC and HL. 
+                        // put the HO byte into H and the LO bytes into L.
+                        let result =  (self.sp as u32) + hl;
+                        self.regs.h = ((result & 0x0000ff00) >> 8) as u8;
+                        self.regs.l = (result & 0x000000ff) as u8;
+
+                        // set the carry flag
+                        self.flags.carry = ((result & 0xffff0000) > 0) as u8;
+
+                        self.pc += 1;
+                    }
+                    0x3A => {
+                        // INSTRUCTION: LDA
+                        let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                                    (self.memory[self.pc + 1] as u16)) as usize;
+
+                        self.regs.a = self.memory[addr];
+
+                        self.pc += 3;
+                    }
+                    0x3B => {
+                        // INSTRUCTION: DCX SP
+                        self.sp -= 1;
+
+                        self.pc += 1;
+                    }
+                    0x3C => {
+                        // INSTRUCTION: INR A
+                        // DESCRIPTION: 
+                        //      Increment register A by 1;
+
+                        // increment the value in register A by 1.
+                        let result = self.regs.a + 1;
+
+                        // this instruction affects all the condition flags except 
+                        // the carry flag.
+                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                        self.flags.parity = {
+                            let mut counter = 0;
+                            let mut r = result;
+                            for _ in 0..8 {
+                                if (r & 0x01) == 1 { counter += 1; }
+                                r >>= 1;
+                            }
+                            
+                            ((counter & 0x01) == 0) as u8
+                        };
+                        
+                        // load register A with the result of the computation
+                        self.regs.a = result;
+
+                        self.pc += 1;
+                    }
+                    0x3D => {
+                        // INSTRUCTION: DCR A
+                        // DESCRIPTION:
+                        //      The value in register A is decremented by 1;
+
+                        // decrement the value in register A by 1.
+                        let result = self.regs.a - 1;
+
+                        // this instruction affects all the condition flags except 
+                        // the carry flag.
+                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                        self.flags.parity = {
+                            let mut counter = 0;
+                            let mut r = result;
+                            for _ in 0..8 {
+                                if (r & 0x01) == 1 { counter += 1; }
+                                r >>= 1;
+                            }
+                            
+                            ((counter & 0x01) == 0) as u8
+                        };
+                        
+                        // load register A with the result of the computation
+                        self.regs.a = result;
+
+                        self.pc += 1;
+                    }
+                    0x3E => {
+                        // INSTRUCTION: MVI A
+                        // DESCRIPTION:
+                        //      the immediate data byte is stored in register A. 
+                        //      No condition flags are affected. 
+
+                        // load the next byte into register A
+                        self.regs.a = self.memory[self.pc + 1];
+
+                        self.pc += 2;
+                    }
+                    0x3F => {
+                        // INSTRUCTION: CMC
+                        self.flags.carry = !self.flags.carry;
+
+                        self.pc += 2;
+                    }
 
 
                     0x40 => {}
