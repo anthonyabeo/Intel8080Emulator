@@ -354,3 +354,20 @@ fn emulate_daa() {
     assert_eq!(machine.flags.sign, 0);
     assert_eq!(machine.flags.parity, 0);
 }
+
+#[test]
+fn emulate_sta() {
+    let mut machine = Intel8080::new();
+    machine.regs.a = 0x9b;
+
+    machine.memory = vec![
+        0x32,
+        4, 0,
+        0x76,
+        0
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.memory[4], machine.regs.a);
+}

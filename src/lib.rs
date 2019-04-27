@@ -900,8 +900,30 @@ pub mod intel8080 {
 
 
                     0x30 => { self.pc += 1; }
-                    0x31 => {}
-                    0x32 => {}
+                    0x31 => {
+                        // INSTRUCTION: LXI SP
+                        // DESCRIPTION: 
+                        //      Load the next two bytes into the stack pointer. 
+
+                        // load bytes into register H and L
+                        self.sp = (((self.memory[self.pc + 2] as u16) << 8) | 
+                                   (self.memory[self.pc + 1] as u16)) as usize;
+
+                        self.pc += 3;
+                    }
+                    0x32 => {
+                        // INSTRUCTION: STA
+                        // DESCRIPTION: 
+                        //      The contents of the accumulator replace the byte at the memory 
+                        //      address formed by concatenating HI ADD with LOW ADD.
+
+                        let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                                    (self.memory[self.pc + 1] as u16)) as usize;
+
+                        self.memory[addr] = self.regs.a;
+
+                        self.pc += 3;
+                    }
                     0x33 => {}
                     0x34 => {}
                     0x35 => {}
