@@ -1281,88 +1281,88 @@ pub mod intel8080 {
                     }
 
                     
-                    // 0x60 => {
-                    //     // INSTRUCTION: MOV H, B
-                    //     self.regs.h = self.regs.b;
-                    //     self.pc += 1;
-                    // }
-                    // 0x61 => {
-                    //     // INSTRUCTION: MOV H, C
-                    //     self.regs.h = self.regs.c;
-                    //     self.pc += 1;
-                    // }
-                    // 0x62 => {
-                    //     // INSTRUCTION: MOV H, D
-                    //     self.regs.h = self.regs.d;
-                    //     self.pc += 1;
-                    // }
-                    // 0x63 => {
-                    //     // INSTRUCTION: MOV H, E
-                    //     self.regs.h = self.regs.e;
-                    //     self.pc += 1;
-                    // }
-                    // 0x64 => {
-                    //     // INSTRUCTION: MOV H, H
-                    //     self.pc += 1;
-                    // }
-                    // 0x65 => {
-                    //     // INSTRUCTION: MOV H, L
-                    //     self.regs.h = self.regs.l;
-                    //     self.pc += 1;
-                    // }
-                    // 0x66 => {
-                    //     // INSTRUCTION: MOV H, M
-                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
-                    //     self.regs.h = self.memory[addr];
+                    0x60 => {
+                        // INSTRUCTION: MOV H, B
+                        self.regs.h = self.regs.b;
+                        self.pc += 1;
+                    }
+                    0x61 => {
+                        // INSTRUCTION: MOV H, C
+                        self.regs.h = self.regs.c;
+                        self.pc += 1;
+                    }
+                    0x62 => {
+                        // INSTRUCTION: MOV H, D
+                        self.regs.h = self.regs.d;
+                        self.pc += 1;
+                    }
+                    0x63 => {
+                        // INSTRUCTION: MOV H, E
+                        self.regs.h = self.regs.e;
+                        self.pc += 1;
+                    }
+                    0x64 => {
+                        // INSTRUCTION: MOV H, H
+                        self.pc += 1;
+                    }
+                    0x65 => {
+                        // INSTRUCTION: MOV H, L
+                        self.regs.h = self.regs.l;
+                        self.pc += 1;
+                    }
+                    0x66 => {
+                        // INSTRUCTION: MOV H, M
+                        let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                        self.regs.h = self.memory[addr];
 
-                    //     self.pc += 1;
-                    // }
-                    // 0x67 => {
-                    //     // INSTRUCTION: MOV H, A
-                    //     self.regs.h = self.regs.a;
-                    //     self.pc += 1;
-                    // }
-                    // 0x68 => {
-                    //     // INSTRUCTION: MOV L, B
-                    //     self.regs.l = self.regs.b;
-                    //     self.pc += 1;
-                    // }
-                    // 0x69 => {
-                    //     // INSTRUCTION: MOV L, C
-                    //     self.regs.l = self.regs.c;
-                    //     self.pc += 1;
-                    // }
-                    // 0x6A => {
-                    //     // INSTRUCTION: MOV L, D
-                    //     self.regs.l = self.regs.d;
-                    //     self.pc += 1;
-                    // }
-                    // 0x6B => {
-                    //     // INSTRUCTION: MOV L, E
-                    //     self.regs.l = self.regs.e;
-                    //     self.pc += 1;
-                    // }
-                    // 0x6C => {
-                    //     // INSTRUCTION: MOV L, H
-                    //     self.regs.l = self.regs.h;
-                    //     self.pc += 1;
-                    // }
-                    // 0x6D => {
-                    //     // INSTRUCTION: MOV L, L
-                    //     self.pc += 1;
-                    // }
-                    // 0x6E => {
-                    //     // INSTRUCTION: MOV L, M
-                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
-                    //     self.regs.l = self.memory[addr];
+                        self.pc += 1;
+                    }
+                    0x67 => {
+                        // INSTRUCTION: MOV H, A
+                        self.regs.h = self.regs.a;
+                        self.pc += 1;
+                    }
+                    0x68 => {
+                        // INSTRUCTION: MOV L, B
+                        self.regs.l = self.regs.b;
+                        self.pc += 1;
+                    }
+                    0x69 => {
+                        // INSTRUCTION: MOV L, C
+                        self.regs.l = self.regs.c;
+                        self.pc += 1;
+                    }
+                    0x6A => {
+                        // INSTRUCTION: MOV L, D
+                        self.regs.l = self.regs.d;
+                        self.pc += 1;
+                    }
+                    0x6B => {
+                        // INSTRUCTION: MOV L, E
+                        self.regs.l = self.regs.e;
+                        self.pc += 1;
+                    }
+                    0x6C => {
+                        // INSTRUCTION: MOV L, H
+                        self.regs.l = self.regs.h;
+                        self.pc += 1;
+                    }
+                    0x6D => {
+                        // INSTRUCTION: MOV L, L
+                        self.pc += 1;
+                    }
+                    0x6E => {
+                        // INSTRUCTION: MOV L, M
+                        let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                        self.regs.l = self.memory[addr];
 
-                    //     self.pc += 1;
-                    // }
-                    // 0x6F => {
-                    //     // INSTRUCTION: MOV L, A
-                    //     self.regs.l = self.regs.a;
-                    //     self.pc += 1;
-                    // }
+                        self.pc += 1;
+                    }
+                    0x6F => {
+                        // INSTRUCTION: MOV L, A
+                        self.regs.l = self.regs.a;
+                        self.pc += 1;
+                    }
 
 
                     // 0x70 => {
