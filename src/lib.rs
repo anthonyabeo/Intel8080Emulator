@@ -2,6 +2,18 @@
 pub mod tests;
 
 pub mod cpu {
+    pub mod utils {
+        pub fn parity(result: u16, size: usize) -> u8 {
+            let mut counter = 0;
+            let mut res = result;
+            for _ in 0..size {
+                if (res & 0x01) == 1 { counter += 1; }
+                res >>= 1;
+            }
+            
+            ((counter & 0x01) == 0) as u8
+        }
+    }
     pub struct ConditionFlags {
         pub carry: u8,
         pub aux_carry: u8,
@@ -50,6 +62,8 @@ pub mod intel8080 {
     use std::io::Read;
 
     use crate::cpu::{ConditionFlags, Register};
+    use crate::cpu::utils::*;
+
 
     pub struct Intel8080 {
         pub regs: Register,
@@ -137,25 +151,16 @@ pub mod intel8080 {
                         //      Increment register B by 1;
 
                         // increment the value in register B by 1.
-                        let result = self.regs.b + 1;
+                        let result = (self.regs.b as u16) + 1;
 
                         // this instruction affects all the condition flags except 
                         // the carry flag.
-                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                        self.flags.parity = {
-                            let mut counter = 0;
-                            let mut r = result;
-                            for _ in 0..8 {
-                                if (r & 0x01) == 1 { counter += 1; }
-                                r >>= 1;
-                            }
-                            
-                            ((counter & 0x01) == 0) as u8
-                        };
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
                         
                         // load register B with the result of the computation
-                        self.regs.b = result;
+                        self.regs.b = result as u8;
 
                         self.pc += 1;
                     }
@@ -165,25 +170,16 @@ pub mod intel8080 {
                         //      The value in register B is decremented by 1;
 
                         // decrement the value in register B by 1.
-                        let result = self.regs.b - 1;
+                        let result = (self.regs.b as u16) - 1;
 
                         // this instruction affects all the condition flags except 
                         // the carry flag.
-                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                        self.flags.parity = {
-                            let mut counter = 0;
-                            let mut r = result;
-                            for _ in 0..8 {
-                                if (r & 0x01) == 1 { counter += 1; }
-                                r >>= 1;
-                            }
-                            
-                            ((counter & 0x01) == 0) as u8
-                        };
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
                         
                         // load register B with the result of the computation
-                        self.regs.b = result;
+                        self.regs.b = result as u8;
 
                         self.pc += 1;
                     }
@@ -275,25 +271,16 @@ pub mod intel8080 {
                         //      Increment register C by 1;
 
                         // increment the value in register C by 1.
-                        let result = self.regs.c + 1;
+                        let result = (self.regs.c as u16) + 1;
 
                         // this instruction affects all the condition flags except 
                         // the carry flag.
-                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                        self.flags.parity = {
-                            let mut counter = 0;
-                            let mut r = result;
-                            for _ in 0..8 {
-                                if (r & 0x01) == 1 { counter += 1; }
-                                r >>= 1;
-                            }
-                            
-                            ((counter & 0x01) == 0) as u8
-                        };
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
                         
                         // load register C with the result of the computation
-                        self.regs.c = result;
+                        self.regs.c = result as u8;
 
                         self.pc += 1;
                     }
@@ -303,25 +290,16 @@ pub mod intel8080 {
                         //      The value in register C is decremented by 1;
 
                         // decrement the value in register C by 1.
-                        let result = self.regs.c - 1;
+                        let result = (self.regs.c as u16) - 1;
 
                         // this instruction affects all the condition flags except 
                         // the carry flag.
-                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                        self.flags.parity = {
-                            let mut counter = 0;
-                            let mut r = result;
-                            for _ in 0..8 {
-                                if (r & 0x01) == 1 { counter += 1; }
-                                r >>= 1;
-                            }
-                            
-                            ((counter & 0x01) == 0) as u8
-                        };
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
                         
                         // load register C with the result of the computation
-                        self.regs.c = result;
+                        self.regs.c = result as u8;
 
                         self.pc += 1;
                     }
@@ -407,25 +385,16 @@ pub mod intel8080 {
                         //      Increment register D by 1;
 
                         // increment the value in register D by 1.
-                        let result = self.regs.d + 1;
+                        let result = (self.regs.d as u16) + 1;
 
                         // this instruction affects all the condition flags except 
                         // the carry flag.
-                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                        self.flags.parity = {
-                            let mut counter = 0;
-                            let mut r = result;
-                            for _ in 0..8 {
-                                if (r & 0x01) == 1 { counter += 1; }
-                                r >>= 1;
-                            }
-                            
-                            ((counter & 0x01) == 0) as u8
-                        };
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
                         
                         // load register B with the result of the computation
-                        self.regs.d = result;
+                        self.regs.d = result as u8;
 
                         self.pc += 1;
                     }
@@ -435,25 +404,16 @@ pub mod intel8080 {
                         //      The value in register D is decremented by 1;
 
                         // decrement the value in register D by 1.
-                        let result = self.regs.d - 1;
+                        let result = (self.regs.d as u16) - 1;
 
                         // this instruction affects all the condition flags except 
                         // the carry flag.
-                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                        self.flags.parity = {
-                            let mut counter = 0;
-                            let mut r = result;
-                            for _ in 0..8 {
-                                if (r & 0x01) == 1 { counter += 1; }
-                                r >>= 1;
-                            }
-                            
-                            ((counter & 0x01) == 0) as u8
-                        };
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
                         
                         // load register D with the result of the computation
-                        self.regs.d = result;
+                        self.regs.d = result as u8;
 
                         self.pc += 1;
                     }
@@ -545,25 +505,16 @@ pub mod intel8080 {
                         //      Increment register E by 1;
 
                         // increment the value in register E by 1.
-                        let result = self.regs.e + 1;
+                        let result = (self.regs.e as u16) + 1;
 
                         // this instruction affects all the condition flags except 
                         // the carry flag.
-                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                        self.flags.parity = {
-                            let mut counter = 0;
-                            let mut r = result;
-                            for _ in 0..8 {
-                                if (r & 0x01) == 1 { counter += 1; }
-                                r >>= 1;
-                            }
-                            
-                            ((counter & 0x01) == 0) as u8
-                        };
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
                         
                         // load register E with the result of the computation
-                        self.regs.e = result;
+                        self.regs.e = result as u8;
 
                         self.pc += 1;
                     }
@@ -573,25 +524,16 @@ pub mod intel8080 {
                         //      The value in register E is decremented by 1;
 
                         // decrement the value in register E by 1.
-                        let result = self.regs.e - 1;
+                        let result = (self.regs.e as u16) - 1;
 
                         // this instruction affects all the condition flags except 
                         // the carry flag.
-                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                        self.flags.parity = {
-                            let mut counter = 0;
-                            let mut r = result;
-                            for _ in 0..8 {
-                                if (r & 0x01) == 1 { counter += 1; }
-                                r >>= 1;
-                            }
-                            
-                            ((counter & 0x01) == 0) as u8
-                        };
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
                         
                         // load register E with the result of the computation
-                        self.regs.e = result;
+                        self.regs.e = result as u8;
 
                         self.pc += 1;
                     }
@@ -675,25 +617,16 @@ pub mod intel8080 {
                         //      Increment register H by 1;
 
                         // increment the value in register H by 1.
-                        let result = self.regs.h + 1;
+                        let result = (self.regs.h as u16) + 1;
 
                         // this instruction affects all the condition flags except 
                         // the carry flag.
-                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                        self.flags.parity = {
-                            let mut counter = 0;
-                            let mut r = result;
-                            for _ in 0..8 {
-                                if (r & 0x01) == 1 { counter += 1; }
-                                r >>= 1;
-                            }
-                            
-                            ((counter & 0x01) == 0) as u8
-                        };
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
                         
                         // load register H with the result of the computation
-                        self.regs.h = result;
+                        self.regs.h = result as u8;
 
                         self.pc += 1;
                     }
@@ -703,25 +636,16 @@ pub mod intel8080 {
                         //      The value in register H is decremented by 1;
 
                         // decrement the value in register H by 1.
-                        let result = self.regs.h - 1;
+                        let result = (self.regs.h as u16) - 1;
 
                         // this instruction affects all the condition flags except 
                         // the carry flag.
-                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                        self.flags.parity = {
-                            let mut counter = 0;
-                            let mut r = result;
-                            for _ in 0..8 {
-                                if (r & 0x01) == 1 { counter += 1; }
-                                r >>= 1;
-                            }
-                            
-                            ((counter & 0x01) == 0) as u8
-                        };
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
                         
                         // load register H with the result of the computation
-                        self.regs.h = result;
+                        self.regs.h = result as u8;
 
                         self.pc += 1;
                     }
@@ -754,16 +678,7 @@ pub mod intel8080 {
 
                         self.flags.zero = ((self.regs.a as u16 & 0xffff) == 0) as u8;
                         self.flags.sign = ((self.regs.a as u16 & 0x8000) != 0) as u8;
-                        self.flags.parity = {
-                            let mut counter = 0;
-                            let mut r = self.regs.a;
-                            for _ in 0..8 {
-                                if (r & 0x01) == 1 { counter += 1; }
-                                r >>= 1;
-                            }
-                            
-                            ((counter & 0x01) == 0) as u8
-                        };
+                        self.flags.parity = parity(self.regs.a as u16, 8);
 
                         self.pc += 1;
                     }
@@ -828,25 +743,16 @@ pub mod intel8080 {
                         //      Increment register L by 1;
 
                         // increment the value in register L by 1.
-                        let result = self.regs.l + 1;
+                        let result = (self.regs.l as u16) + 1;
 
                         // this instruction affects all the condition flags except 
                         // the carry flag.
-                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                        self.flags.parity = {
-                            let mut counter = 0;
-                            let mut r = result;
-                            for _ in 0..8 {
-                                if (r & 0x01) == 1 { counter += 1; }
-                                r >>= 1;
-                            }
-                            
-                            ((counter & 0x01) == 0) as u8
-                        };
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
                         
                         // load register L with the result of the computation
-                        self.regs.l = result;
+                        self.regs.l = result as u8;
 
                         self.pc += 1;
                     }
@@ -856,25 +762,16 @@ pub mod intel8080 {
                         //      The value in register L is decremented by 1;
 
                         // decrement the value in register L by 1.
-                        let result = self.regs.l - 1;
+                        let result = (self.regs.l as u16) - 1;
 
                         // this instruction affects all the condition flags except 
                         // the carry flag.
-                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                        self.flags.parity = {
-                            let mut counter = 0;
-                            let mut r = result;
-                            for _ in 0..8 {
-                                if (r & 0x01) == 1 { counter += 1; }
-                                r >>= 1;
-                            }
-                            
-                            ((counter & 0x01) == 0) as u8
-                        };
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
                         
                         // load register L with the result of the computation
-                        self.regs.l = result;
+                        self.regs.l = result as u8;
 
                         self.pc += 1;
                     }
@@ -941,25 +838,16 @@ pub mod intel8080 {
 
                         let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
 
-                        let result = self.memory[addr] + 1;
+                        let result = (self.memory[addr] as u16) + 1;
 
                         // this instruction affects all the condition flags except 
                         // the carry flag.
-                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                        self.flags.parity = {
-                            let mut counter = 0;
-                            let mut r = result;
-                            for _ in 0..8 {
-                                if (r & 0x01) == 1 { counter += 1; }
-                                r >>= 1;
-                            }
-                            
-                            ((counter & 0x01) == 0) as u8
-                        };
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
                         
                         // load register B with the result of the computation
-                        self.memory[addr] = result;
+                        self.memory[addr] = result as u8;
 
                         self.pc += 1;
                     }
@@ -967,25 +855,16 @@ pub mod intel8080 {
                         // INSTRUCTION: DCR M
                         let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
 
-                        let result = self.memory[addr] - 1;
+                        let result = (self.memory[addr] as u16) - 1;
 
                         // this instruction affects all the condition flags except 
                         // the carry flag.
-                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                        self.flags.parity = {
-                            let mut counter = 0;
-                            let mut r = result;
-                            for _ in 0..8 {
-                                if (r & 0x01) == 1 { counter += 1; }
-                                r >>= 1;
-                            }
-                            
-                            ((counter & 0x01) == 0) as u8
-                        };
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
                         
                         // load register B with the result of the computation
-                        self.memory[addr] = result;
+                        self.memory[addr] = result as u8;
 
                         self.pc += 1;
                     }
@@ -1042,25 +921,16 @@ pub mod intel8080 {
                         //      Increment register A by 1;
 
                         // increment the value in register A by 1.
-                        let result = self.regs.a + 1;
+                        let result = (self.regs.a as u16) + 1;
 
                         // this instruction affects all the condition flags except 
                         // the carry flag.
-                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                        self.flags.parity = {
-                            let mut counter = 0;
-                            let mut r = result;
-                            for _ in 0..8 {
-                                if (r & 0x01) == 1 { counter += 1; }
-                                r >>= 1;
-                            }
-                            
-                            ((counter & 0x01) == 0) as u8
-                        };
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
                         
                         // load register A with the result of the computation
-                        self.regs.a = result;
+                        self.regs.a = result as u8;
 
                         self.pc += 1;
                     }
@@ -1070,25 +940,16 @@ pub mod intel8080 {
                         //      The value in register A is decremented by 1;
 
                         // decrement the value in register A by 1.
-                        let result = self.regs.a - 1;
+                        let result = (self.regs.a as u16) - 1;
 
                         // this instruction affects all the condition flags except 
                         // the carry flag.
-                        self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                        self.flags.parity = {
-                            let mut counter = 0;
-                            let mut r = result;
-                            for _ in 0..8 {
-                                if (r & 0x01) == 1 { counter += 1; }
-                                r >>= 1;
-                            }
-                            
-                            ((counter & 0x01) == 0) as u8
-                        };
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
                         
                         // load register A with the result of the computation
-                        self.regs.a = result;
+                        self.regs.a = result as u8;
 
                         self.pc += 1;
                     }
@@ -1456,370 +1317,227 @@ pub mod intel8080 {
                         // INSTRUCTION: MOV A, A
                         self.pc += 1;
                     }
+                
 
+                    0x80 => {
+                        // INSTRUCTION: ADD B
+                        let result = (self.regs.a as u16) + (self.regs.b as u16);
 
-                    // 0x80 => {
-                    //     // INSTRUCTION: ADD B
-                    //     let result = (self.regs.a as u16) + (self.regs.b as u16);
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 16);
 
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.regs.a = result as u8;
 
-                    //     self.regs.a = result as u8;
+                        self.pc += 1;
+                    }
+                    0x81 => {
+                        // INSTRUCTION: ADD C
+                        let result = (self.regs.a as u16) + (self.regs.c as u16);
 
-                    //     self.pc += 1;
-                    // }
-                    // 0x81 => {
-                    //     // INSTRUCTION: ADD C
-                    //     let result = (self.regs.a as u16) + (self.regs.c as u16);
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 16);
 
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.regs.a = result as u8;
 
-                    //     self.regs.a = result as u8;
+                        self.pc += 1;
+                    }
+                    0x82 => {
+                        // INSTRUCTION: ADD D
+                        let result = (self.regs.a as u16) + (self.regs.d as u16);
 
-                    //     self.pc += 1;
-                    // }
-                    // 0x82 => {
-                    //     // INSTRUCTION: ADD D
-                    //     let result = (self.regs.a as u16) + (self.regs.d as u16);
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 16);
 
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.regs.a = result as u8;
 
-                    //     self.regs.a = result as u8;
+                        self.pc += 1;
+                    }
+                    0x83 => {
+                        // INSTRUCTION: ADD E
+                        let result = (self.regs.a as u16) + (self.regs.e as u16);
 
-                    //     self.pc += 1;
-                    // }
-                    // 0x83 => {
-                    //     // INSTRUCTION: ADD E
-                    //     let result = (self.regs.a as u16) + (self.regs.e as u16);
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 16);
 
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.regs.a = result as u8;
 
-                    //     self.regs.a = result as u8;
+                        self.pc += 1;
+                    }
+                    0x84 => {
+                        // INSTRUCTION: ADD H
+                        let result = (self.regs.a as u16) + (self.regs.h as u16);
 
-                    //     self.pc += 1;
-                    // }
-                    // 0x84 => {
-                    //     // INSTRUCTION: ADD H
-                    //     let result = (self.regs.a as u16) + (self.regs.h as u16);
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 16);
 
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.regs.a = result as u8;
 
-                    //     self.regs.a = result as u8;
+                        self.pc += 1;
+                    }
+                    0x85 => {
+                        // INSTRUCTION: ADD L
+                        let result = (self.regs.a as u16) + (self.regs.l as u16);
 
-                    //     self.pc += 1;
-                    // }
-                    // 0x85 => {
-                    //     // INSTRUCTION: ADD L
-                    //     let result = (self.regs.a as u16) + (self.regs.l as u16);
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 16);
 
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.regs.a = result as u8;
 
-                    //     self.regs.a = result as u8;
+                        self.pc += 1;
+                    }
+                    0x86 => {
+                        // INSTRUCTION: ADD M
+                        let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                        let result = (self.regs.a as u16) + (self.memory[addr] as u16);
 
-                    //     self.pc += 1;
-                    // }
-                    // 0x86 => {
-                    //     // INSTRUCTION: ADD M
-                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
-                    //     let result = (self.regs.a as u16) + (self.memory[addr] as u16);
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 16);
 
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.regs.a = result as u8;
 
-                    //     self.regs.a = result as u8;
+                        self.pc += 1;
+                    }
+                    0x87 => {
+                        // INSTRUCTION: ADD A
+                        let result = (self.regs.a as u16) << 1;
 
-                    //     self.pc += 1;
-                    // }
-                    // 0x87 => {
-                    //     // INSTRUCTION: ADD A
-                    //     let result = (self.regs.a as u16) << 1;
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 16);
 
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.regs.a = result as u8;
 
-                    //     self.regs.a = result as u8;
+                        self.pc += 1;
+                    }
+                    0x88 => {
+                        // INSTRUCTION: ADC B
+                        let result = (self.regs.a as u16) + (self.regs.b as u16) + 
+                                                            (self.flags.carry as u16);
 
-                    //     self.pc += 1;
-                    // }
-                    // 0x88 => {
-                    //     // INSTRUCTION: ADC B
-                    //     let result = (self.regs.a as u16) + (self.regs.b as u16) + 
-                    //                                         (self.flags.carry as u16);
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 16);
 
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.regs.a = result as u8;
 
-                    //     self.regs.a = result as u8;
+                        self.pc += 1;
+                    }
+                    0x89 => {
+                        // INSTRUCTION: ADC C
+                        let result = (self.regs.a as u16) + (self.regs.c as u16) + 
+                                                            (self.flags.carry as u16);
 
-                    //     self.pc += 1;
-                    // }
-                    // 0x89 => {
-                    //     // INSTRUCTION: ADC C
-                    //     let result = (self.regs.a as u16) + (self.regs.c as u16) + 
-                    //                                         (self.flags.carry as u16);
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 16);
 
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.regs.a = result as u8;
 
-                    //     self.regs.a = result as u8;
+                        self.pc += 1;
+                    }
+                    0x8A => {
+                        // INSTRUCTION: ADC D
+                        let result = (self.regs.a as u16) + (self.regs.d as u16) + 
+                                                            (self.flags.carry as u16);
 
-                    //     self.pc += 1;
-                    // }
-                    // 0x8A => {
-                    //     // INSTRUCTION: ADC D
-                    //     let result = (self.regs.a as u16) + (self.regs.d as u16) + 
-                    //                                         (self.flags.carry as u16);
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 16);
 
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.regs.a = result as u8;
 
-                    //     self.regs.a = result as u8;
+                        self.pc += 1;
+                    }
+                    0x8B => {
+                        // INSTRUCTION: ADC E
+                        let result = (self.regs.a as u16) + (self.regs.e as u16) + 
+                                                            (self.flags.carry as u16);
 
-                    //     self.pc += 1;
-                    // }
-                    // 0x8B => {
-                    //     // INSTRUCTION: ADC E
-                    //     let result = (self.regs.a as u16) + (self.regs.e as u16) + 
-                    //                                         (self.flags.carry as u16);
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 16);
 
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.regs.a = result as u8;
 
-                    //     self.regs.a = result as u8;
+                        self.pc += 1;
+                    }
+                    0x8C => {
+                        // INSTRUCTION: ADC H
+                        let result = (self.regs.a as u16) + (self.regs.h as u16) + 
+                                                            (self.flags.carry as u16);
 
-                    //     self.pc += 1;
-                    // }
-                    // 0x8C => {
-                    //     // INSTRUCTION: ADC H
-                    //     let result = (self.regs.a as u16) + (self.regs.h as u16) + 
-                    //                                         (self.flags.carry as u16);
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 16);
 
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.regs.a = result as u8;
 
-                    //     self.regs.a = result as u8;
+                        self.pc += 1;
+                    }
+                    0x8D => {
+                        // INSTRUCTION: ADC L
+                        let result = (self.regs.a as u16) + (self.regs.l as u16) + 
+                                                            (self.flags.carry as u16);
 
-                    //     self.pc += 1;
-                    // }
-                    // 0x8D => {
-                    //     // INSTRUCTION: ADC L
-                    //     let result = (self.regs.a as u16) + (self.regs.l as u16) + 
-                    //                                         (self.flags.carry as u16);
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 16);
 
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.regs.a = result as u8;
 
-                    //     self.regs.a = result as u8;
+                        self.pc += 1;
+                    }
+                    0x8E => {
+                        // INSTRUCTION: ADC M
+                        let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                        let result = (self.regs.a as u16) + (self.memory[addr] as u16) + 
+                                                            (self.flags.carry as u16);
 
-                    //     self.pc += 1;
-                    // }
-                    // 0x8E => {
-                    //     // INSTRUCTION: ADC M
-                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
-                    //     let result = (self.regs.a as u16) + (self.memory[addr] as u16) + 
-                    //                                         (self.flags.carry as u16);
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 16);
 
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.regs.a = result as u8;
 
-                    //     self.regs.a = result as u8;
+                        self.pc += 1;
+                    }
+                    0x8F => {
+                        // INSTRUCTION: ADD A
+                        let result = ((self.regs.a as u16) << 1) + (self.flags.carry as u16);
 
-                    //     self.pc += 1;
-                    // }
-                    // 0x8F => {
-                    //     // INSTRUCTION: ADD A
-                    //     let result = ((self.regs.a as u16) << 1) + (self.flags.carry as u16);
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = ((result & 0xffff) == 0) as u8;
+                        self.flags.sign = ((result & 0x8000) != 0) as u8;
+                        self.flags.parity = parity(result, 16);
 
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.regs.a = result as u8;
 
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-
+                        self.pc += 1;
+                    }
+                    
+                    _ => {}
 
                     // 0x90 => {
                     //     // INSTRUCTION: SUB B
@@ -1828,16 +1546,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //     self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -1850,16 +1559,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //     self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -1872,16 +1572,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //     self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -1894,16 +1585,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //     self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -1916,16 +1598,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //     self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -1938,16 +1611,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //     self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -1961,16 +1625,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //     self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -1983,16 +1638,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //     self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2000,21 +1646,12 @@ pub mod intel8080 {
                     // }
                     // 0x98 => {
                     //     // INSTRUCTION: SBB B
-                    //     let result = (self.regs.a as u16) - (self.regs.b + self.flags.carry) as u16;
+                    //     let result = (self.regs.a as u16) - ((self.regs.b as u16) + (self.flags.carry as u16));
 
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //     self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2022,21 +1659,12 @@ pub mod intel8080 {
                     // }
                     // 0x99 => {
                     //     // INSTRUCTION: SBB C
-                    //     let result = (self.regs.a as u16) - (self.regs.c + self.flags.carry) as u16;
+                    //     let result = (self.regs.a as u16) - ((self.regs.c as u16) + (self.flags.carry as u16));
 
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //     self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2044,21 +1672,12 @@ pub mod intel8080 {
                     // }
                     // 0x9A => {
                     //     // INSTRUCTION: SBB D
-                    //     let result = (self.regs.a as u16) - (self.regs.d + self.flags.carry) as u16;
+                    //     let result = (self.regs.a as u16) - ((self.regs.d as u16) + (self.flags.carry as u16));
 
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //     self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2066,21 +1685,12 @@ pub mod intel8080 {
                     // }
                     // 0x9B => {
                     //     // INSTRUCTION: SBB E
-                    //     let result = (self.regs.a as u16) - (self.regs.e + self.flags.carry) as u16;
+                    //     let result = (self.regs.a as u16) - ((self.regs.e as u16) + (self.flags.carry as u16));
 
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //     self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2088,21 +1698,12 @@ pub mod intel8080 {
                     // }
                     // 0x9C => {
                     //     // INSTRUCTION: SBB H
-                    //     let result = (self.regs.a as u16) - (self.regs.h + self.flags.carry) as u16;
+                    //     let result = (self.regs.a as u16) - ((self.regs.h as u16) + (self.flags.carry as u16));
 
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //     self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2110,21 +1711,12 @@ pub mod intel8080 {
                     // }
                     // 0x9D => {
                     //     // INSTRUCTION: SBB L
-                    //     let result = (self.regs.a as u16) - (self.regs.l + self.flags.carry) as u16;
+                    //     let result = (self.regs.a as u16) - ((self.regs.l as u16) + (self.flags.carry as u16));
 
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //     self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2133,21 +1725,12 @@ pub mod intel8080 {
                     // 0x9E => {
                     //     // INSTRUCTION: SBB M
                     //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
-                    //     let result = (self.regs.a as u16) - (self.memory[addr] + self.flags.carry) as u16;
+                    //     let result = (self.regs.a as u16) - ((self.memory[addr] as u16) + (self.flags.carry as u16));
 
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //     self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2155,21 +1738,12 @@ pub mod intel8080 {
                     // }
                     // 0x9F => {
                     //     // INSTRUCTION: SBB A
-                    //     let result = (self.regs.a as u16) - (self.regs.a + self.flags.carry) as u16;
+                    //     let result = (self.regs.a as u16) - ((self.regs.a as u16) + (self.flags.carry as u16));
 
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //     self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2184,16 +1758,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //     self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2206,16 +1771,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2228,16 +1784,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2250,16 +1797,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2272,16 +1810,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2294,16 +1823,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2317,16 +1837,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2339,16 +1850,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2361,16 +1863,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //     self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2383,16 +1876,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2405,16 +1889,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2427,16 +1902,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2449,16 +1915,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2471,16 +1928,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2494,16 +1942,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2516,16 +1955,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2540,16 +1970,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2562,16 +1983,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2584,16 +1996,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2606,16 +2009,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2628,16 +2022,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2650,16 +2035,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2673,16 +2049,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2695,16 +2062,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
 
@@ -2717,16 +2075,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.pc += 1;
                     // }
@@ -2737,16 +2086,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.pc += 1;
                     // }
@@ -2757,16 +2097,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.pc += 1;
                     // }
@@ -2777,16 +2108,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.pc += 1;
                     // }
@@ -2797,16 +2119,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.pc += 1;
                     // }
@@ -2817,16 +2130,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.pc += 1;
                     // }
@@ -2838,16 +2142,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.pc += 1;
                     // }
@@ -2858,16 +2153,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.pc += 1;
                     // }
@@ -2945,16 +2231,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
                     //     self.pc += 2;
@@ -3045,16 +2322,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
                     //     self.pc += 2;
@@ -3140,16 +2408,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
                     //     self.pc += 2;
@@ -3225,16 +2484,7 @@ pub mod intel8080 {
                     //     self.flags.carry = (result > 0xff) as u8;
                     //     self.flags.zero = ((result & 0xffff) == 0) as u8;
                     //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                    //      self.flags.parity = parity(result, 16);
 
                     //     self.regs.a = result as u8;
                     //     self.pc += 2;
