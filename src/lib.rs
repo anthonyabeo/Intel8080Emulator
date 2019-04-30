@@ -56,6 +56,7 @@ pub mod intel8080 {
         pub flags: ConditionFlags,
         pub pc: usize,
         pub sp: usize,
+        pub int_enable: u8,
         pub memory: Vec<u8>
     }
 
@@ -66,6 +67,7 @@ pub mod intel8080 {
                 flags: ConditionFlags::new(),
                 pc: 0_usize,
                 sp: 0_usize,
+                int_enable: 0,
                 memory: vec![0_u8; 0xFFFF] // 65 KB of Memory
             }
         }
@@ -1109,220 +1111,2562 @@ pub mod intel8080 {
                     }
 
 
-                    0x40 => {}
-                    0x41 => {}
-                    0x42 => {}
-                    0x43 => {}
-                    0x44 => {}
-                    0x45 => {}
-                    0x46 => {}
-                    0x47 => {}
-                    0x48 => {}
-                    0x49 => {}
-                    0x4A => {}
-                    0x4B => {}
-                    0x4C => {}
-                    0x4D => {}
-                    0x4E => {}
-                    0x4F => {}
+                    0x40 => {
+                        // INSTRUCTION: MOV B, B
+                        self.pc += 1;
+                    }
+                    0x41 => {
+                        // INSTRUCTION: MOV B, C
+                        self.regs.b = self.regs.c;
+                        self.pc += 1;
+                    }
+                    0x42 => {
+                        // INSTRUCTION: MOV B, D
+                        self.regs.b = self.regs.d;
+                        self.pc += 1;
+                    }
+                    0x43 => {
+                        // INSTRUCTION: MOV B, E
+                        self.regs.b = self.regs.e;
+                        self.pc += 1;
+                    }
+                    0x44 => {
+                        // INSTRUCTION: MOV B, H
+                        self.regs.b = self.regs.h;
+                        self.pc += 1;
+                    }
+                    0x45 => {
+                        // INSTRUCTION: MOV B, L
+                        self.regs.b = self.regs.l;
+                        self.pc += 1;
+                    }
+                    0x46 => {
+                        // INSTRUCTION: MOV B, M
+                        // DESCRIPTION: move from memory into B
+                        let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                        self.regs.b = self.memory[addr];
+
+                        self.pc += 1;
+                    }
+                    0x47 => {
+                        // INSTRUCTION: MOV B, A
+                        self.regs.b = self.regs.a;
+                        self.pc += 1;
+                    }
+                    0x48 => {
+                        // INSTRUCTION: MOV C, B
+                        self.regs.c = self.regs.b;
+                        self.pc += 1;
+                    }
+                    0x49 => { 
+                        // INSTRUCTION: MOV C, C
+                        self.pc += 1;
+                    }
+                    0x4A => {
+                        // INSTRUCTION: MOV C, D
+                        self.regs.c = self.regs.d;
+                        self.pc += 1;
+                    }
+                    0x4B => {
+                        // INSTRUCTION: MOV C, E
+                        self.regs.c = self.regs.e;
+                        self.pc += 1;
+                    }
+                    0x4C => {
+                        // INSTRUCTION: MOV C, H
+                        self.regs.c = self.regs.h;
+                        self.pc += 1;
+                    }
+                    0x4D => {
+                        // INSTRUCTION: MOV C, L
+                        self.regs.c = self.regs.l;
+                        self.pc += 1;
+                    }
+                    0x4E => {
+                        // INSTRUCTION: MOV C, M
+                        // DESCRIPTION: move from memory into C
+                        let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                        self.regs.c = self.memory[addr];
+
+                        self.pc += 1;
+                    }
+                    0x4F => {
+                        // INSTRUCTION: MOV C, A
+                        self.regs.c = self.regs.a;
+                        self.pc += 1;
+                    }
+                    _ => {}
+
+                    // 0x50 => {
+                    //     // INSTRUCTION: MOV D, B
+                    //     self.regs.d = self.regs.b;
+                    //     self.pc += 1;
+                    // }
+                    // 0x51 => {
+                    //     // INSTRUCTION: MOV D, C
+                    //     self.regs.d = self.regs.c;
+                    //     self.pc += 1;
+                    // }
+                    // 0x52 => {
+                    //     // INSTRUCTION: MOV D, D
+                    //     self.pc += 1;
+                    // }
+                    // 0x53 => {
+                    //     // INSTRUCTION: MOV D, E
+                    //     self.regs.d = self.regs.e;
+                    //     self.pc += 1;
+                    // }
+                    // 0x54 => {
+                    //     // INSTRUCTION: MOV D, H
+                    //     self.regs.d = self.regs.h;
+                    //     self.pc += 1;
+                    // }
+                    // 0x55 => {
+                    //     // INSTRUCTION: MOV D, L
+                    //     self.regs.d = self.regs.l;
+                    //     self.pc += 1;
+                    // }
+                    // 0x56 => {
+                    //     // INSTRUCTION: MOV D, M
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     self.regs.d = self.memory[addr];
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x57 => {
+                    //      // INSTRUCTION: MOV D, A
+                    //     self.regs.d = self.regs.a;
+                    //     self.pc += 1;
+                    // }
+                    // 0x58 => {
+                    //     // INSTRUCTION: MOV E, B
+                    //     self.regs.e = self.regs.b;
+                    //     self.pc += 1;
+                    // }
+                    // 0x59 => {
+                    //     // INSTRUCTION: MOV E, C
+                    //     self.regs.e = self.regs.c;
+                    //     self.pc += 1;
+                    // }
+                    // 0x5A => {
+                    //     // INSTRUCTION: MOV E, D
+                    //     self.regs.e = self.regs.d;
+                    //     self.pc += 1;
+                    // }
+                    // 0x5B => {
+                    //     // INSTRUCTION: MOV E, E
+                    //     self.pc += 1;
+                    // }
+                    // 0x5C => {
+                    //     // INSTRUCTION: MOV E, H
+                    //     self.regs.e = self.regs.h;
+                    //     self.pc += 1;
+                    // }
+                    // 0x5D => {
+                    //     // INSTRUCTION: MOV E, L
+                    //     self.regs.e = self.regs.l;
+                    //     self.pc += 1;
+                    // }
+                    // 0x5E => {
+                    //     // INSTRUCTION: MOV E, M
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     self.regs.e = self.memory[addr];
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x5F => {
+                    //     // INSTRUCTION: MOV E, A
+                    //     self.regs.e = self.regs.a;
+                    //     self.pc += 1;
+                    // }
 
 
-                    0x50 => {}
-                    0x51 => {}
-                    0x52 => {}
-                    0x53 => {}
-                    0x54 => {}
-                    0x55 => {}
-                    0x56 => {}
-                    0x57 => {}
-                    0x58 => {}
-                    0x59 => {}
-                    0x5A => {}
-                    0x5B => {}
-                    0x5C => {}
-                    0x5D => {}
-                    0x5E => {}
-                    0x5F => {}
+                    // 0x60 => {
+                    //     // INSTRUCTION: MOV H, B
+                    //     self.regs.h = self.regs.b;
+                    //     self.pc += 1;
+                    // }
+                    // 0x61 => {
+                    //     // INSTRUCTION: MOV H, C
+                    //     self.regs.h = self.regs.c;
+                    //     self.pc += 1;
+                    // }
+                    // 0x62 => {
+                    //     // INSTRUCTION: MOV H, D
+                    //     self.regs.h = self.regs.d;
+                    //     self.pc += 1;
+                    // }
+                    // 0x63 => {
+                    //     // INSTRUCTION: MOV H, E
+                    //     self.regs.h = self.regs.e;
+                    //     self.pc += 1;
+                    // }
+                    // 0x64 => {
+                    //     // INSTRUCTION: MOV H, H
+                    //     self.pc += 1;
+                    // }
+                    // 0x65 => {
+                    //     // INSTRUCTION: MOV H, L
+                    //     self.regs.h = self.regs.l;
+                    //     self.pc += 1;
+                    // }
+                    // 0x66 => {
+                    //     // INSTRUCTION: MOV H, M
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     self.regs.h = self.memory[addr];
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x67 => {
+                    //     // INSTRUCTION: MOV H, A
+                    //     self.regs.h = self.regs.a;
+                    //     self.pc += 1;
+                    // }
+                    // 0x68 => {
+                    //     // INSTRUCTION: MOV L, B
+                    //     self.regs.l = self.regs.b;
+                    //     self.pc += 1;
+                    // }
+                    // 0x69 => {
+                    //     // INSTRUCTION: MOV L, C
+                    //     self.regs.l = self.regs.c;
+                    //     self.pc += 1;
+                    // }
+                    // 0x6A => {
+                    //     // INSTRUCTION: MOV L, D
+                    //     self.regs.l = self.regs.d;
+                    //     self.pc += 1;
+                    // }
+                    // 0x6B => {
+                    //     // INSTRUCTION: MOV L, E
+                    //     self.regs.l = self.regs.e;
+                    //     self.pc += 1;
+                    // }
+                    // 0x6C => {
+                    //     // INSTRUCTION: MOV L, H
+                    //     self.regs.l = self.regs.h;
+                    //     self.pc += 1;
+                    // }
+                    // 0x6D => {
+                    //     // INSTRUCTION: MOV L, L
+                    //     self.pc += 1;
+                    // }
+                    // 0x6E => {
+                    //     // INSTRUCTION: MOV L, M
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     self.regs.l = self.memory[addr];
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x6F => {
+                    //     // INSTRUCTION: MOV L, A
+                    //     self.regs.l = self.regs.a;
+                    //     self.pc += 1;
+                    // }
 
 
-                    0x60 => {}
-                    0x61 => {}
-                    0x62 => {}
-                    0x63 => {}
-                    0x64 => {}
-                    0x65 => {}
-                    0x66 => {}
-                    0x67 => {}
-                    0x68 => {}
-                    0x69 => {}
-                    0x6A => {}
-                    0x6B => {}
-                    0x6C => {}
-                    0x6D => {}
-                    0x6E => {}
-                    0x6F => {}
+                    // 0x70 => {
+                    //     // INSTRUCTION: MOV M, B
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     self.memory[addr] = self.regs.b;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x71 => {
+                    //     // INSTRUCTION: MOV M, C
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     self.memory[addr] = self.regs.c;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x72 => {
+                    //     // INSTRUCTION: MOV M, D
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     self.memory[addr] = self.regs.d;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x73 => {
+                    //     // INSTRUCTION: MOV M, E
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     self.memory[addr] = self.regs.e;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x74 => {
+                    //     // INSTRUCTION: MOV M, H
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     self.memory[addr] = self.regs.h;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x75 => {
+                    //     // INSTRUCTION: MOV M, L
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     self.memory[addr] = self.regs.l;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x76 => {}
+                    // 0x77 => {
+                    //     // INSTRUCTION: MOV M, A
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     self.memory[addr] = self.regs.a;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x78 => {
+                    //     // INSTRUCTION: MOV A, B
+                    //     self.regs.a = self.regs.b;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x79 => {
+                    //     // INSTRUCTION: MOV A, C
+                    //     self.regs.a = self.regs.c;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x7A => {
+                    //     // INSTRUCTION: MOV A, D
+                    //     self.regs.a = self.regs.e;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x7B => {
+                    //     // INSTRUCTION: MOV A, E
+                    //     self.regs.a = self.regs.e;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x7C => {
+                    //     // INSTRUCTION: MOV A, H
+                    //     self.regs.a = self.regs.h;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x7D => {
+                    //     // INSTRUCTION: MOV A, L
+                    //     self.regs.a = self.regs.l;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x7E => {
+                    //     // INSTRUCTION: MOV A, M
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     self.regs.a = self.memory[addr];
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x7F => {
+                    //     // INSTRUCTION: MOV A, A
+                    //     self.pc += 1;
+                    // }
 
 
-                    0x70 => {}
-                    0x71 => {}
-                    0x72 => {}
-                    0x73 => {}
-                    0x74 => {}
-                    0x75 => {}
-                    0x76 => {}
-                    0x77 => {}
-                    0x78 => {}
-                    0x79 => {}
-                    0x7A => {}
-                    0x7B => {}
-                    0x7C => {}
-                    0x7D => {}
-                    0x7E => {}
-                    0x7F => {}
+                    // 0x80 => {
+                    //     // INSTRUCTION: ADD B
+                    //     let result = (self.regs.a as u16) + (self.regs.b as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x81 => {
+                    //     // INSTRUCTION: ADD C
+                    //     let result = (self.regs.a as u16) + (self.regs.c as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x82 => {
+                    //     // INSTRUCTION: ADD D
+                    //     let result = (self.regs.a as u16) + (self.regs.d as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x83 => {
+                    //     // INSTRUCTION: ADD E
+                    //     let result = (self.regs.a as u16) + (self.regs.e as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x84 => {
+                    //     // INSTRUCTION: ADD H
+                    //     let result = (self.regs.a as u16) + (self.regs.h as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x85 => {
+                    //     // INSTRUCTION: ADD L
+                    //     let result = (self.regs.a as u16) + (self.regs.l as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x86 => {
+                    //     // INSTRUCTION: ADD M
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     let result = (self.regs.a as u16) + (self.memory[addr] as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x87 => {
+                    //     // INSTRUCTION: ADD A
+                    //     let result = (self.regs.a as u16) << 1;
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x88 => {
+                    //     // INSTRUCTION: ADC B
+                    //     let result = (self.regs.a as u16) + (self.regs.b as u16) + 
+                    //                                         (self.flags.carry as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x89 => {
+                    //     // INSTRUCTION: ADC C
+                    //     let result = (self.regs.a as u16) + (self.regs.c as u16) + 
+                    //                                         (self.flags.carry as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x8A => {
+                    //     // INSTRUCTION: ADC D
+                    //     let result = (self.regs.a as u16) + (self.regs.d as u16) + 
+                    //                                         (self.flags.carry as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x8B => {
+                    //     // INSTRUCTION: ADC E
+                    //     let result = (self.regs.a as u16) + (self.regs.e as u16) + 
+                    //                                         (self.flags.carry as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x8C => {
+                    //     // INSTRUCTION: ADC H
+                    //     let result = (self.regs.a as u16) + (self.regs.h as u16) + 
+                    //                                         (self.flags.carry as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x8D => {
+                    //     // INSTRUCTION: ADC L
+                    //     let result = (self.regs.a as u16) + (self.regs.l as u16) + 
+                    //                                         (self.flags.carry as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x8E => {
+                    //     // INSTRUCTION: ADC M
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     let result = (self.regs.a as u16) + (self.memory[addr] as u16) + 
+                    //                                         (self.flags.carry as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x8F => {
+                    //     // INSTRUCTION: ADD A
+                    //     let result = ((self.regs.a as u16) << 1) + (self.flags.carry as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
 
 
-                    0x80 => {}
-                    0x81 => {}
-                    0x82 => {}
-                    0x83 => {}
-                    0x84 => {}
-                    0x85 => {}
-                    0x86 => {}
-                    0x87 => {}
-                    0x88 => {}
-                    0x89 => {}
-                    0x8A => {}
-                    0x8B => {}
-                    0x8C => {}
-                    0x8D => {}
-                    0x8E => {}
-                    0x8F => {}
+                    // 0x90 => {
+                    //     // INSTRUCTION: SUB B
+                    //     let result = (self.regs.a as u16) - (self.regs.b as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x91 => {
+                    //     // INSTRUCTION: SUB C
+                    //     let result = (self.regs.a as u16) - (self.regs.c as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x92 => {
+                    //     // INSTRUCTION: SUB D
+                    //     let result = (self.regs.a as u16) - (self.regs.d as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x93 => {
+                    //     // INSTRUCTION: SUB E
+                    //     let result = (self.regs.a as u16) - (self.regs.e as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x94 => {
+                    //     // INSTRUCTION: SUB H
+                    //     let result = (self.regs.a as u16) - (self.regs.h as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x95 => {
+                    //     // INSTRUCTION: SUB L
+                    //     let result = (self.regs.a as u16) - (self.regs.l as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x96 => {
+                    //     // INSTRUCTION: SUB M
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     let result = (self.regs.a as u16) - (self.memory[addr] as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x97 => {
+                    //     // INSTRUCTION: SUB A
+                    //     let result = 0_u16;
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x98 => {
+                    //     // INSTRUCTION: SBB B
+                    //     let result = (self.regs.a as u16) - (self.regs.b + self.flags.carry) as u16;
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x99 => {
+                    //     // INSTRUCTION: SBB C
+                    //     let result = (self.regs.a as u16) - (self.regs.c + self.flags.carry) as u16;
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x9A => {
+                    //     // INSTRUCTION: SBB D
+                    //     let result = (self.regs.a as u16) - (self.regs.d + self.flags.carry) as u16;
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x9B => {
+                    //     // INSTRUCTION: SBB E
+                    //     let result = (self.regs.a as u16) - (self.regs.e + self.flags.carry) as u16;
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x9C => {
+                    //     // INSTRUCTION: SBB H
+                    //     let result = (self.regs.a as u16) - (self.regs.h + self.flags.carry) as u16;
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x9D => {
+                    //     // INSTRUCTION: SBB L
+                    //     let result = (self.regs.a as u16) - (self.regs.l + self.flags.carry) as u16;
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x9E => {
+                    //     // INSTRUCTION: SBB M
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     let result = (self.regs.a as u16) - (self.memory[addr] + self.flags.carry) as u16;
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0x9F => {
+                    //     // INSTRUCTION: SBB A
+                    //     let result = (self.regs.a as u16) - (self.regs.a + self.flags.carry) as u16;
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
 
 
-                    0x90 => {}
-                    0x91 => {}
-                    0x92 => {}
-                    0x93 => {}
-                    0x94 => {}
-                    0x95 => {}
-                    0x96 => {}
-                    0x97 => {}
-                    0x98 => {}
-                    0x99 => {}
-                    0x9A => {}
-                    0x9B => {}
-                    0x9C => {}
-                    0x9D => {}
-                    0x9E => {}
-                    0x9F => {}
+                    // 0xA0 => {
+                    //     // INSTRUCTION: ANA B
+                    //     let result = (self.regs.a as u16) & (self.regs.b as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xA1 => {
+                    //     // INSTRUCTION: ANA C
+                    //     let result = (self.regs.a as u16) & (self.regs.c as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xA2 => {
+                    //     // INSTRUCTION: ANA D
+                    //     let result = (self.regs.a as u16) & (self.regs.d as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xA3 => {
+                    //     // INSTRUCTION: ANA E
+                    //     let result = (self.regs.a as u16) & (self.regs.e as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xA4 => {
+                    //     // INSTRUCTION: ANA H
+                    //     let result = (self.regs.a as u16) & (self.regs.h as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xA5 => {
+                    //     // INSTRUCTION: ANA L
+                    //     let result = (self.regs.a as u16) & (self.regs.l as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xA6 => {
+                    //     // INSTRUCTION: ANA M
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     let result = (self.regs.a as u16) & (self.memory[addr] as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xA7 => {
+                    //     // INSTRUCTION: ANA A
+                    //     let result = self.regs.a as u16;
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xA8 => {
+                    //     // INSTRUCTION: XRA B
+                    //     let result = (self.regs.a as u16) ^ (self.regs.b as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xA9 => {
+                    //     // INSTRUCTION: XRA C
+                    //     let result = (self.regs.a as u16) ^ (self.regs.c as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xAA => {
+                    //     // INSTRUCTION: XRA D
+                    //     let result = (self.regs.a as u16) ^ (self.regs.d as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xAB => {
+                    //     // INSTRUCTION: XRA E
+                    //     let result = (self.regs.a as u16) ^ (self.regs.e as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xAC => {
+                    //     // INSTRUCTION: XRA H
+                    //     let result = (self.regs.a as u16) ^ (self.regs.h as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xAD => {
+                    //     // INSTRUCTION: XRA L
+                    //     let result = (self.regs.a as u16) ^ (self.regs.l as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xAE => {
+                    //     // INSTRUCTION: XRA M
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     let result = (self.regs.a as u16) ^ (self.memory[addr] as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xAF => {
+                    //     // INSTRUCTION: XRA A
+                    //     let result = (self.regs.a as u16) ^ (self.regs.a as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
 
 
-                    0xA0 => {}
-                    0xA1 => {}
-                    0xA2 => {}
-                    0xA3 => {}
-                    0xA4 => {}
-                    0xA5 => {}
-                    0xA6 => {}
-                    0xA7 => {}
-                    0xA8 => {}
-                    0xA9 => {}
-                    0xAA => {}
-                    0xAB => {}
-                    0xAC => {}
-                    0xAD => {}
-                    0xAE => {}
-                    0xAF => {}
+                    // 0xB0 => {
+                    //     // INSTRUCTION: ORA B
+                    //     let result = (self.regs.a as u16) | (self.regs.b as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xB1 => {
+                    //     // INSTRUCTION: ORA C
+                    //     let result = (self.regs.a as u16) | (self.regs.c as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xB2 => {
+                    //     // INSTRUCTION: ORA D
+                    //     let result = (self.regs.a as u16) | (self.regs.d as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xB3 => {
+                    //     // INSTRUCTION: ORA E
+                    //     let result = (self.regs.a as u16) | (self.regs.e as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xB4 => {
+                    //     // INSTRUCTION: ORA H
+                    //     let result = (self.regs.a as u16) | (self.regs.h as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xB5 => {
+                    //     // INSTRUCTION: ORA L
+                    //     let result = (self.regs.a as u16) | (self.regs.l as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xB6 => {
+                    //     // INSTRUCTION: ORA C
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     let result = (self.regs.a as u16) | (self.memory[addr] as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xB7 => {
+                    //     // INSTRUCTION: ORA A
+                    //     let result = (self.regs.a as u16) | (self.regs.a as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xB8 => {
+                    //     // INSTRUCTION: CMP B
+                    //     let result = (self.regs.a as u16) - (self.regs.b as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xB9 => {
+                    //     // INSTRUCTION: CMP C
+                    //     let result = (self.regs.a as u16) - (self.regs.c as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xBA => {
+                    //     // INSTRUCTION: CMP D
+                    //     let result = (self.regs.a as u16) - (self.regs.d as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xBB => {
+                    //     // INSTRUCTION: CMP E
+                    //     let result = (self.regs.a as u16) - (self.regs.e as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xBC => {
+                    //     // INSTRUCTION: CMP H
+                    //     let result = (self.regs.a as u16) - (self.regs.h as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xBD => {
+                    //     // INSTRUCTION: CMP L
+                    //     let result = (self.regs.a as u16) - (self.regs.l as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xBE => {
+                    //     // INSTRUCTION: CMP M
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     let result = (self.regs.a as u16) - (self.memory[addr] as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xBF => {
+                    //     // INSTRUCTION: CMP A
+                    //     let result = (self.regs.a as u16) - (self.regs.a as u16);
+
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.pc += 1;
+                    // }
 
 
-                    0xB0 => {}
-                    0xB1 => {}
-                    0xB2 => {}
-                    0xB3 => {}
-                    0xB4 => {}
-                    0xB5 => {}
-                    0xB6 => {}
-                    0xB7 => {}
-                    0xB8 => {}
-                    0xB9 => {}
-                    0xBA => {}
-                    0xBB => {}
-                    0xBC => {}
-                    0xBD => {}
-                    0xBE => {}
-                    0xBF => {}
+                    // 0xC0 => {
+                    //     // INSTRUCTION: RNZ
+                    //     if self.flags.zero == 0 {
+                    //         let lsb = self.memory[self.sp];
+                    //         let msb = self.memory[self.sp + 1];
+
+                    //         let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
+                    //         self.pc = addr;
+                    //         self.sp += 2;
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xC1 => {
+                    //     // INSTRUCTION: POP B
+                    //     self.regs.c = self.memory[self.sp];
+                    //     self.regs.b = self.memory[self.sp + 1];
+
+                    //     self.sp += 2;
+                    // }
+                    // 0xC2 => {
+                    //     // INSTRUCTION: JNZ
+                    //     if self.flags.zero == 0 {
+                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+
+                    //         self.pc = addr;
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xC3 => {
+                    //     // INSTRUCTION: JMP
+                    //     let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                    //                 (self.memory[self.pc + 1] as u16)) as usize;
+
+                    //     self.pc = addr;
+                    // }
+                    // 0xC4 => {
+                    //     // INSTRUCTION: CNZ
+                    //     if self.flags.zero == 0 {
+                    //         let msb = ((self.pc & 0xff00) >> 8) as u8;
+                    //         let lsb = (self.pc & 0x00ff) as u8;
+
+                    //         self.memory[self.sp] = lsb; self.sp += 1;
+                    //         self.memory[self.sp] = msb; self.sp += 1;
+
+                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+
+                    //         self.pc = addr
+
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xC5 => {
+                    //     // INSTRUCTION: PUSH B
+                    //     self.memory[self.sp - 1] = self.regs.b;
+                    //     self.memory[self.sp - 2] = self.regs.c;
+
+                    //     self.sp -= 2;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xC6 => {
+                    //     // INSTRUCTION: ADI
+                    //     let result = (self.regs.a as u16) + (self.memory[self.pc + 1] as u16);
+                        
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+                    //     self.pc += 2;
+                    // }
+                    // 0xC7 => {
+                    //     // INSTRUCTION: RST 0
+                    //     let msb = ((self.pc & 0xff00) >> 8) as u8;
+                    //     let lsb = (self.pc & 0x00ff) as u8;
+
+                    //     self.memory[self.sp] = lsb; self.sp += 1;
+                    //     self.memory[self.sp] = msb;
+
+                    //     self.pc = 0;
+                    // }
+                    // 0xC8 => {
+                    //     // INSTRUCTION: RZ
+                    //     if self.flags.zero == 1 {
+                    //         let lsb = self.memory[self.sp];
+                    //         let msb = self.memory[self.sp + 1];
+
+                    //         let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
+                    //         self.pc = addr;
+                    //         self.sp += 2;
+
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xC9 => {
+                    //     // INSTRUCTION: RET
+                    //     let lsb = self.memory[self.sp];
+                    //     let msb = self.memory[self.sp + 1];
+
+                    //     let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
+                    //     self.pc = addr;
+                    //     self.sp += 2;
+                    // }
+                    // 0xCA => {
+                    //     // INSTRUCTION: JZ
+                    //     if self.flags.zero == 1 {
+                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+
+                    //         self.pc = addr;
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xCB => { 
+                    //     // INSTRUCTION: NOP
+                    //     self.pc += 1; 
+                    // }
+                    // 0xCC => {
+                    //     // INSTRUCTION: CZ
+                    //     if self.flags.zero == 1 {
+                    //         let msb = ((self.pc & 0xff00) >> 8) as u8;
+                    //         let lsb = (self.pc & 0x00ff) as u8;
+
+                    //         self.memory[self.sp] = lsb; self.sp += 1;
+                    //         self.memory[self.sp] = msb; self.sp += 1;
+
+                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+
+                    //         self.pc = addr
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xCD => {
+                    //     // INSTRUCTION: CALL
+                    //     let msb = ((self.pc & 0xff00) >> 8) as u8;
+                    //     let lsb = (self.pc & 0x00ff) as u8;
+
+                    //     self.memory[self.sp] = lsb; self.sp += 1;
+                    //     self.memory[self.sp] = msb; self.sp += 1;
+
+                    //     let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                    //                 (self.memory[self.pc + 1] as u16)) as usize;
+
+                    //     self.pc = addr
+                    // }
+                    // 0xCE => {
+                    //     // INSTRUCTION: ACI
+                    //     let result = (self.regs.a as u16) + (self.memory[self.pc + 1] as u16 + 
+                    //                                          self.flags.carry as u16);
+                        
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+                    //     self.pc += 2;
+                    // }
+                    // 0xCF => {
+                    //     // INSTRUCTION: RST 1
+                    //     let msb = ((self.pc & 0xff00) >> 8) as u8;
+                    //     let lsb = (self.pc & 0x00ff) as u8;
+
+                    //     self.memory[self.sp] = lsb; self.sp += 1;
+                    //     self.memory[self.sp] = msb; self.sp += 1;
+
+                    //     self.pc = (1_u8 << 3) as usize;
+                    // }
 
 
-                    0xC0 => {}
-                    0xC1 => {}
-                    0xC2 => {}
-                    0xC3 => {}
-                    0xC4 => {}
-                    0xC5 => {}
-                    0xC6 => {}
-                    0xC7 => {}
-                    0xC8 => {}
-                    0xC9 => {}
-                    0xCA => {}
-                    0xCB => {}
-                    0xCC => {}
-                    0xCD => {}
-                    0xCE => {}
-                    0xCF => {}
+                    // 0xD0 => {
+                    //     // INSTRUCTION: RNC
+                    //     if self.flags.carry == 0 {
+                    //         let lsb = self.memory[self.sp];
+                    //         let msb = self.memory[self.sp + 1];
+
+                    //         let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
+                    //         self.pc = addr;
+                    //         self.sp += 2;
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xD1 => {
+                    //     // INSTRUCTION: POP D
+                    //     self.regs.e = self.memory[self.sp];
+                    //     self.regs.d = self.memory[self.sp + 1];
+
+                    //     self.sp += 2;
+                    // }
+                    // 0xD2 => {
+                    //     // INSTRUCTION: JNC
+                    //     if self.flags.carry == 0 {
+                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+
+                    //         self.pc = addr;
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xD3 => {
+                    //     // INSTRUCTION: OUT
+                    //     self.pc += 1;
+                    // }
+                    // 0xD4 => {
+                    //     // INSTRUCTION: CNC
+                    //     if self.flags.carry == 0 {
+                    //         let msb = ((self.pc & 0xff00) >> 8) as u8;
+                    //         let lsb = (self.pc & 0x00ff) as u8;
+
+                    //         self.memory[self.sp] = lsb; self.sp += 1;
+                    //         self.memory[self.sp] = msb; self.sp += 1;
+
+                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+
+                    //         self.pc = addr
+
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xD5 => {
+                    //     // INSTRUCTION: PUSH D
+                    //     self.memory[self.sp - 1] = self.regs.d;
+                    //     self.memory[self.sp - 2] = self.regs.e;
+
+                    //     self.sp -= 2;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xD6 => {
+                    //     // INSTRUCTION: SUI
+                    //     let result = (self.regs.a as u16) - (self.memory[self.pc + 1] as u16);
+                        
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+                    //     self.pc += 2;
+                    // }
+                    // 0xD7 => {
+                    //      // INSTRUCTION: RST 2
+                    //     let msb = ((self.pc & 0xff00) >> 8) as u8;
+                    //     let lsb = (self.pc & 0x00ff) as u8;
+
+                    //     self.memory[self.sp] = lsb; self.sp += 1;
+                    //     self.memory[self.sp] = msb; self.sp += 1;
+
+                    //     self.pc = (2_u8 << 3) as usize;
+                    // }
+                    // 0xD8 => {
+                    //     // INSTRUCTION: RC
+                    //     if self.flags.zero == 1 {
+                    //         let lsb = self.memory[self.sp];
+                    //         let msb = self.memory[self.sp + 1];
+
+                    //         let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
+                    //         self.pc = addr;
+                    //         self.sp += 2;
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xD9 => {
+                    //     // INSTRUCTION: NOP
+                    //     self.pc += 1;
+                    // }
+                    // 0xDA => {
+                    //     // INSTRUCTION: JC
+                    //     if self.flags.carry == 1 {
+                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+
+                    //         self.pc = addr;
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xDB => {
+                    //     // INSTRUCTION: IN
+                    //     self.pc += 1;
+                    // }
+                    // 0xDC => {
+                    //     // INSTRUCTION: CC
+                    //     if self.flags.carry == 1 {
+                    //         let msb = ((self.pc & 0xff00) >> 8) as u8;
+                    //         let lsb = (self.pc & 0x00ff) as u8;
+
+                    //         self.memory[self.sp] = lsb; self.sp += 1;
+                    //         self.memory[self.sp] = msb; self.sp += 1;
+
+                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+
+                    //         self.pc = addr
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xDD => {
+                    //     // INSTRUCTION: NOP
+                    //     self.pc += 1;
+                    // }
+                    // 0xDE => {
+                    //     // INSTRUCTION: SBI
+                    //     let result = (self.regs.a as u16) + (self.memory[self.pc + 1] as u16 + 
+                    //                                          self.flags.carry as u16);
+                        
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+                    //     self.pc += 2;
+                    // }
+                    // 0xDF => {
+                    //      // INSTRUCTION: RST 3
+                    //     let msb = ((self.pc & 0xff00) >> 8) as u8;
+                    //     let lsb = (self.pc & 0x00ff) as u8;
+
+                    //     self.memory[self.sp] = lsb; self.sp += 1;
+                    //     self.memory[self.sp] = msb; self.sp += 1;
+
+                    //     self.pc = (3_u8 << 3) as usize;
+                    // }
 
 
-                    0xD0 => {}
-                    0xD1 => {}
-                    0xD2 => {}
-                    0xD3 => {}
-                    0xD4 => {}
-                    0xD5 => {}
-                    0xD6 => {}
-                    0xD7 => {}
-                    0xD8 => {}
-                    0xD9 => {}
-                    0xDA => {}
-                    0xDB => {}
-                    0xDC => {}
-                    0xDD => {}
-                    0xDE => {}
-                    0xDF => {}
+                    // 0xE0 => {
+                    //     // INSTRUCTION: RPO
+                    //     if self.flags.parity == 0 {
+                    //         let lsb = self.memory[self.sp];
+                    //         let msb = self.memory[self.sp + 1];
+
+                    //         let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
+                    //         self.pc = addr;
+                    //         self.sp += 2;
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xE1 => {
+                    //     // INSTRUCTION: POP H
+                    //     self.regs.l = self.memory[self.sp];
+                    //     self.regs.h = self.memory[self.sp + 1];
+
+                    //     self.sp += 2;
+                    // }
+                    // 0xE2 => {
+                    //     // INSTRUCTION: JPO
+                    //     if self.flags.parity == 0 {
+                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+
+                    //         self.pc = addr;
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xE3 => {
+                    //     // INSTRUCTION: XTHL
+                    //     let lsb = self.memory[self.sp];
+                    //     let msb = self.memory[self.sp + 1];
+
+                    //     self.memory[self.sp] = self.regs.l;
+                    //     self.memory[self.sp + 1] = self.regs.h;
+
+                    //     self.regs.l = lsb;
+                    //     self.regs.h = msb;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xE4 => {
+                    //     // INSTRUCTION: CPO
+                    //     if self.flags.parity == 0 {
+                    //         let msb = ((self.pc & 0xff00) >> 8) as u8;
+                    //         let lsb = (self.pc & 0x00ff) as u8;
+
+                    //         self.memory[self.sp] = lsb; self.sp += 1;
+                    //         self.memory[self.sp] = msb; self.sp += 1;
+
+                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+
+                    //         self.pc = addr
+
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xE5 => {
+                    //     // INSTRUCTION: PUSH H
+                    //     self.memory[self.sp - 1] = self.regs.h;
+                    //     self.memory[self.sp - 2] = self.regs.l;
+
+                    //     self.sp -= 2;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xE6 => {
+                    //     // INSTRUCTION: ANI
+                    //     let result = (self.regs.a as u16) & (self.memory[self.pc + 1] as u16);
+                        
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+                    //     self.pc += 2;
+                    // }
+                    // 0xE7 => {
+                    //      // INSTRUCTION: RST 4
+                    //     let msb = ((self.pc & 0xff00) >> 8) as u8;
+                    //     let lsb = (self.pc & 0x00ff) as u8;
+
+                    //     self.memory[self.sp] = lsb; self.sp += 1;
+                    //     self.memory[self.sp] = msb; self.sp += 1;
+
+                    //     self.pc = (4_u8 << 3) as usize;
+                    // }
+                    // 0xE8 => {
+                    //     // INSTRUCTION: RPE
+                    //     if self.flags.parity == 1 {
+                    //         let lsb = self.memory[self.sp];
+                    //         let msb = self.memory[self.sp + 1];
+
+                    //         let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
+                    //         self.pc = addr;
+                    //         self.sp += 2;
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xE9 => {
+                    //     // INSTRUCTION: PCHL
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     self.pc = addr;
+                    // }
+                    // 0xEA => {
+                    //     // INSTRUCTION: JPE
+                    //     if self.flags.parity == 1 {
+                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+
+                    //         self.pc = addr;
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xEB => {
+                    //     // INSTRUCTION: XCHG
+                    //     let (d, e) = (self.regs.d, self.regs.d);
+
+                    //     self.regs.d = self.regs.h;
+                    //     self.regs.e = self.regs.l;
+
+                    //     self.regs.h = d;
+                    //     self.regs.l = e;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xEC => {
+                    //     // INSTRUCTION: CPE
+                    //     if self.flags.parity == 1 {
+                    //         let msb = ((self.pc & 0xff00) >> 8) as u8;
+                    //         let lsb = (self.pc & 0x00ff) as u8;
+
+                    //         self.memory[self.sp] = lsb; self.sp += 1;
+                    //         self.memory[self.sp] = msb; self.sp += 1;
+
+                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+
+                    //         self.pc = addr
+
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xED => {
+                    //     // INSTRUCTION: NOP
+                    //     self.pc += 1;
+                    // }
+                    // 0xEE => {
+                    //     // INSTRUCTION: XRI
+                    //     let result = (self.regs.a as u16) ^ (self.memory[self.pc + 1] as u16);
+                        
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+                    //     self.pc += 2;
+                    // }
+                    // 0xEF => {
+                    //      // INSTRUCTION: RST 5
+                    //     let msb = ((self.pc & 0xff00) >> 8) as u8;
+                    //     let lsb = (self.pc & 0x00ff) as u8;
+
+                    //     self.memory[self.sp] = lsb; self.sp += 1;
+                    //     self.memory[self.sp] = msb; self.sp += 1;
+
+                    //     self.pc = (5_u8 << 3) as usize;
+                    // }
 
 
-                    0xE0 => {}
-                    0xE1 => {}
-                    0xE2 => {}
-                    0xE3 => {}
-                    0xE4 => {}
-                    0xE5 => {}
-                    0xE6 => {}
-                    0xE7 => {}
-                    0xE8 => {}
-                    0xE9 => {}
-                    0xEA => {}
-                    0xEB => {}
-                    0xEC => {}
-                    0xED => {}
-                    0xEE => {}
-                    0xEF => {}
+                    // 0xF0 => {
+                    //     if self.flags.sign == 0 {
+                    //         let lsb = self.memory[self.sp];
+                    //         let msb = self.memory[self.sp + 1];
 
+                    //         let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
+                    //         self.pc = addr;
+                    //         self.sp += 2;
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xF1 => {
+                    //     // INSTRUCTION: POP PSW
+                    //     self.regs.a = self.memory[self.sp + 1];
 
-                    0xF0 => {}
-                    0xF1 => {}
-                    0xF2 => {}
-                    0xF3 => {}
-                    0xF4 => {}
-                    0xF5 => {}
-                    0xF6 => {}
-                    0xF7 => {}
-                    0xF8 => {}
-                    0xF9 => {}
-                    0xFA => {}
-                    0xFB => {}
-                    0xFC => {}
-                    0xFD => {}
-                    0xFE => {}
-                    0xFF => {}
+                    //     // get the content of the memory location specified by the stack pointer
+                    //     let result = self.memory[self.sp];
+
+                    //     // restore the condition flags with this value
+                    //     self.flags.carry = (0x05 == (result & 0x08)) as u8;
+                    //     self.flags.zero = ((result & 0xff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x80) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..8 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.sp += 2;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xF2 => {
+                    //     // INSTRUCTION: JP
+                    //     if self.flags.sign == 1 {
+                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+
+                    //         self.pc = addr;
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xF3 => {
+                    //     // INSTRUCTION: DI
+
+                    //     // disable interrupts
+                    //     self.int_enable = 0;
+                    //     self.pc += 1;
+                    // }
+                    // 0xF4 => {
+                    //     // INSTRUCTION: CP
+                    //     if self.flags.sign == 0 {
+                    //         let msb = ((self.pc & 0xff00) >> 8) as u8;
+                    //         let lsb = (self.pc & 0x00ff) as u8;
+
+                    //         self.memory[self.sp] = lsb; self.sp += 1;
+                    //         self.memory[self.sp] = msb; self.sp += 1;
+
+                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+
+                    //         self.pc = addr
+
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }   
+                    // 0xF5 => {
+                    //     // INSTRUCTION: PUSH PSW
+                    //     self.memory[self.sp - 1] = self.regs.a;
+
+                    //     let psw = self.flags.zero        |
+					// 		      self.flags.sign << 1   |
+					// 		      self.flags.parity << 2 |
+					// 		      self.flags.carry << 3  |
+					// 		      self.flags.aux_carry << 4 ;
+
+			        //     self.memory[self.sp - 2] = psw;
+			        //     self.sp -= 2;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xF6 => {
+                    //     // INSTRUCTION: ORI
+                    //     let result = (self.regs.a as u16) | (self.memory[self.pc + 1] as u16);
+                        
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+                    //     self.pc += 2;
+                    // }
+                    // 0xF7 => {
+                    //      // INSTRUCTION: RST 6
+                    //     let msb = ((self.pc & 0xff00) >> 8) as u8;
+                    //     let lsb = (self.pc & 0x00ff) as u8;
+
+                    //     self.memory[self.sp] = lsb; self.sp += 1;
+                    //     self.memory[self.sp] = msb; self.sp += 1;
+
+                    //     self.pc = (6_u8 << 3) as usize;
+                    // }
+                    // 0xF8 => {
+                    //     // INSTRUCTION: RM
+                    //     if self.flags.sign == 1 {
+                    //         let lsb = self.memory[self.sp];
+                    //         let msb = self.memory[self.sp + 1];
+
+                    //         let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
+                    //         self.pc = addr;
+                    //         self.sp += 2;
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xF9 => {
+                    //     // INSTRUCTION: SPHL
+                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                    //     self.sp = addr;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xFA => {
+                    //     // INSTRUCTION: JM
+                    //     if self.flags.sign == 1 {
+                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+
+                    //         self.pc = addr;
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xFB => {
+                    //     // INSTRUCTION: EI
+
+                    //     // enable interrupts
+                    //     self.int_enable = 1;
+
+                    //     self.pc += 1;
+                    // }
+                    // 0xFC => {
+                    //     // INSTRUCTION: CM
+                    //     if self.flags.sign == 1 {
+                    //         let msb = ((self.pc & 0xff00) >> 8) as u8;
+                    //         let lsb = (self.pc & 0x00ff) as u8;
+
+                    //         self.memory[self.sp] = lsb; self.sp += 1;
+                    //         self.memory[self.sp] = msb; self.sp += 1;
+
+                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+
+                    //         self.pc = addr
+
+                    //     } else {
+                    //         self.pc += 1;
+                    //     }
+                    // }
+                    // 0xFD => {
+                    //     // INSTRUCTION: NOP
+                    //     self.pc += 1;
+                    // }
+                    // 0xFE => {
+                    //     // INSTRUCTION: CPI
+                    //     let result = (self.regs.a as u16) - (self.memory[self.pc + 1] as u16);
+                        
+                    //     self.flags.carry = (result > 0xff) as u8;
+                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
+                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
+                    //     self.flags.parity = {
+                    //         let mut counter = 0;
+                    //         let mut r = result;
+                    //         for _ in 0..16 {
+                    //             if (r & 0x01) == 1 { counter += 1; }
+                    //             r >>= 1;
+                    //         }
+                            
+                    //         ((counter & 0x01) == 0) as u8
+                    //     };
+
+                    //     self.regs.a = result as u8;
+                    //     self.pc += 2;
+                    // }
+                    // 0xFF => {
+                    //      // INSTRUCTION: RST 7
+                    //     let msb = ((self.pc & 0xff00) >> 8) as u8;
+                    //     let lsb = (self.pc & 0x00ff) as u8;
+
+                    //     self.memory[self.sp] = lsb; self.sp += 1;
+                    //     self.memory[self.sp] = msb; self.sp += 1;
+
+                    //     self.pc = (7_u8 << 3) as usize;
+                    // }
                 }
             }
         }
