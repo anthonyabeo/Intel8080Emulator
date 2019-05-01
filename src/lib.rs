@@ -194,6 +194,34 @@ pub mod cpu {
             state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
             state.flags.parity = parity(result, 8);
         }
+
+        pub fn dcr(state: &mut Intel8080, byte: char) {
+            // INSTRUCTION: DCR byte
+            // DESCRIPTION:
+            //      The value in the specified register is decremented by 1;
+
+            let mut result = 0;
+            match byte {
+                'B' => { result = (state.regs.b as u16) - 1; state.regs.b = result as u8; }
+                'C' => { result = (state.regs.c as u16) - 1; state.regs.c = result as u8; }
+                'D' => { result = (state.regs.d as u16) - 1; state.regs.d = result as u8; }
+                'E' => { result = (state.regs.e as u16) - 1; state.regs.e = result as u8; }
+                'H' => { result = (state.regs.h as u16) - 1; state.regs.h = result as u8; }
+                'L' => { result = (state.regs.l as u16) - 1; state.regs.l = result as u8; }
+                'A' => { result = (state.regs.a as u16) - 1; state.regs.a = result as u8; }
+                'M' => {
+                        let addr = (((state.regs.h as u16) << 8) | (state.regs.l as u16)) as usize;
+                        let result = (state.memory[addr] as u16) - 1;
+
+                        state.memory[addr] = result as u8;
+                }
+                _ => {}
+            }
+
+            state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
+            state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
+            state.flags.parity = parity(result, 8);
+        }
     }
 
     pub struct ConditionFlags {
@@ -287,25 +315,7 @@ pub mod intel8080 {
                     0x02 => { stax(self, 'B'); self.pc += 1; }
                     0x03 => { inx(self, 'B'); self.pc += 1; }
                     0x04 => { inr(self, 'B'); self.pc += 1; }
-                    0x05 => {
-                        // INSTRUCTION: DCR B
-                        // DESCRIPTION:
-                        //      The value in register B is decremented by 1;
-
-                        // decrement the value in register B by 1.
-                        let result = (self.regs.b as u16) - 1;
-
-                        // this instruction affects all the condition flags except 
-                        // the carry flag.
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 8);
-                        
-                        // load register B with the result of the computation
-                        self.regs.b = result as u8;
-
-                        self.pc += 1;
-                    }
+                    0x05 => { dcr(self, 'B'); self.pc += 1; }
                     0x06 => { mvi(self, 'B'); self.pc += 2; }
                     0x07 => { 
                         // INSTRUCTION: RLC
@@ -379,25 +389,7 @@ pub mod intel8080 {
                         self.pc += 1;
                     }
                     0x0C => { inr(self, 'C'); self.pc += 1; }
-                    0x0D => {
-                        // INSTRUCTION: DCR C
-                        // DESCRIPTION:
-                        //      The value in register C is decremented by 1;
-
-                        // decrement the value in register C by 1.
-                        let result = (self.regs.c as u16) - 1;
-
-                        // this instruction affects all the condition flags except 
-                        // the carry flag.
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 8);
-                        
-                        // load register C with the result of the computation
-                        self.regs.c = result as u8;
-
-                        self.pc += 1;
-                    }
+                    0x0D => { dcr(self, 'C'); self.pc += 1; }
                     0x0E => { mvi(self, 'C'); self.pc += 2; }
                     0x0F => {
                         // INSTRUCTION: RRC
@@ -423,25 +415,7 @@ pub mod intel8080 {
                     0x12 => { stax(self, 'D');  self.pc += 1; }
                     0x13 => { inx(self, 'D'); self.pc += 1; }
                     0x14 => { inr(self, 'D'); self.pc += 1; }
-                    0x15 => {
-                        // INSTRUCTION: DCR D
-                        // DESCRIPTION:
-                        //      The value in register D is decremented by 1;
-
-                        // decrement the value in register D by 1.
-                        let result = (self.regs.d as u16) - 1;
-
-                        // this instruction affects all the condition flags except 
-                        // the carry flag.
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 8);
-                        
-                        // load register D with the result of the computation
-                        self.regs.d = result as u8;
-
-                        self.pc += 1;
-                    }
+                    0x15 => { dcr(self, 'D'); self.pc += 1; }
                     0x16 => { mvi(self, 'D'); self.pc += 2; }
                     0x17 => {
                         // INSTRUCTION: RAL
@@ -515,25 +489,7 @@ pub mod intel8080 {
                         self.pc += 1;
                     }
                     0x1C => { inr(self, 'E'); self.pc += 1; }
-                    0x1D => {
-                        // INSTRUCTION: DCR E
-                        // DESCRIPTION:
-                        //      The value in register E is decremented by 1;
-
-                        // decrement the value in register E by 1.
-                        let result = (self.regs.e as u16) - 1;
-
-                        // this instruction affects all the condition flags except 
-                        // the carry flag.
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 8);
-                        
-                        // load register E with the result of the computation
-                        self.regs.e = result as u8;
-
-                        self.pc += 1;
-                    }
+                    0x1D => { dcr(self, 'E'); self.pc += 1; }
                     0x1E => { mvi(self, 'E'); self.pc += 2; }
                     0x1F => {
                         // INSTRUCTION: RAR
@@ -578,25 +534,7 @@ pub mod intel8080 {
                     }
                     0x23 => { inx(self, 'H'); self.pc += 1; }
                     0x24 => { inr(self, 'H'); self.pc += 1; }
-                    0x25 => {
-                        // INSTRUCTION: DCR H
-                        // DESCRIPTION:
-                        //      The value in register H is decremented by 1;
-
-                        // decrement the value in register H by 1.
-                        let result = (self.regs.h as u16) - 1;
-
-                        // this instruction affects all the condition flags except 
-                        // the carry flag.
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 8);
-                        
-                        // load register H with the result of the computation
-                        self.regs.h = result as u8;
-
-                        self.pc += 1;
-                    }
+                    0x25 => { dcr(self, 'H'); self.pc += 1; }
                     0x26 => { mvi(self, 'H'); self.pc += 2; }
                     0x27 => {
                         // INSTRUCTION: DAA
@@ -676,25 +614,7 @@ pub mod intel8080 {
                         self.pc += 1;
                     }
                     0x2C => { inr(self, 'L'); self.pc += 1; }
-                    0x2D => {
-                        // INSTRUCTION: DCR L
-                        // DESCRIPTION:
-                        //      The value in register L is decremented by 1;
-
-                        // decrement the value in register L by 1.
-                        let result = (self.regs.l as u16) - 1;
-
-                        // this instruction affects all the condition flags except 
-                        // the carry flag.
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 8);
-                        
-                        // load register L with the result of the computation
-                        self.regs.l = result as u8;
-
-                        self.pc += 1;
-                    }
+                    0x2D => { dcr(self, 'L'); self.pc += 1; }
                     0x2E => { mvi(self, 'L'); self.pc += 2; }
                     0x2F => {
                         // INSTRUCTION: CMA
@@ -730,23 +650,7 @@ pub mod intel8080 {
                     }
                     0x33 => { self.sp += 1; self.pc += 1; }
                     0x34 => { inr(self, 'M');  self.pc += 1; }
-                    0x35 => {
-                        // INSTRUCTION: DCR M
-                        let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
-
-                        let result = (self.memory[addr] as u16) - 1;
-
-                        // this instruction affects all the condition flags except 
-                        // the carry flag.
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 8);
-                        
-                        // load register B with the result of the computation
-                        self.memory[addr] = result as u8;
-
-                        self.pc += 1;
-                    }
+                    0x35 => { dcr(self, 'M'); self.pc += 1; }
                     0x36 => {mvi(self, 'M'); self.pc += 2; }
                     0x37 => {
                         // INSTRUCTION: STC
@@ -788,25 +692,7 @@ pub mod intel8080 {
                         self.pc += 1;
                     }
                     0x3C => { inr(self, 'A'); self.pc += 1; }
-                    0x3D => {
-                        // INSTRUCTION: DCR A
-                        // DESCRIPTION:
-                        //      The value in register A is decremented by 1;
-
-                        // decrement the value in register A by 1.
-                        let result = (self.regs.a as u16) - 1;
-
-                        // this instruction affects all the condition flags except 
-                        // the carry flag.
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 8);
-                        
-                        // load register A with the result of the computation
-                        self.regs.a = result as u8;
-
-                        self.pc += 1;
-                    }
+                    0x3D => { dcr(self, 'A'); self.pc += 1; }
                     0x3E => { mvi(self, 'A'); self.pc += 2; }
                     0x3F => {
                         // INSTRUCTION: CMC
