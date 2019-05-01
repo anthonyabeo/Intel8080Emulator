@@ -52,7 +52,7 @@ fn emulate_opcodes_4_0x0c_5_0x0d_6_0x0e() {
 
     assert_eq!(machine.regs.b, 0x9A);
     assert_eq!(machine.flags.zero, 0);
-    assert_eq!(machine.flags.sign, 0);
+    assert_eq!(machine.flags.sign, 1);
     assert_eq!(machine.flags.parity, 1);
 
     // opcode 0x0c
@@ -67,7 +67,7 @@ fn emulate_opcodes_4_0x0c_5_0x0d_6_0x0e() {
 
     assert_eq!(machine.regs.c, 0x9A);
     assert_eq!(machine.flags.zero, 0);
-    assert_eq!(machine.flags.sign, 0);
+    assert_eq!(machine.flags.sign, 1);
     assert_eq!(machine.flags.parity, 1);
 
     // opcode 5

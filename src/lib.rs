@@ -137,6 +137,63 @@ pub mod cpu {
                 _ => {}
             }   
         }
+
+        pub fn inx(state: &mut Intel8080, byte: char) {
+            // INSTRUCTION: INX byte
+            // DESCRIPTION: 
+            //      INX adds one to the contents of the specified register pair.
+
+            match byte {
+                'B' => {
+                    let value = (((state.regs.b as u16) << 8) | (state.regs.c as u16)) + 1;
+
+                    state.regs.b = ((value & 0xff00) >> 8) as u8;
+                    state.regs.c = (value & 0x00ff) as u8;
+                }
+                'D' => {
+                    let value = (((state.regs.d as u16) << 8) | (state.regs.e as u16)) + 1;
+
+                    state.regs.d = ((value & 0xff00) >> 8) as u8;
+                    state.regs.e = (value & 0x00ff) as u8;
+                }
+                'H' => {
+                    let value = (((state.regs.h as u16) << 8) | (state.regs.l as u16)) + 1;
+
+                    state.regs.h = ((value & 0xff00) >> 8) as u8;
+                    state.regs.l = (value & 0x00ff) as u8;
+                }
+                _ => {}
+            }
+
+        }
+
+        pub fn inr(state: &mut Intel8080, byte: char) {
+            // INSTRUCTION: INR byte
+            // DESCRIPTION: 
+            //      Increment the specified register by 1;
+
+            let mut result = 0;
+            match byte {
+                'B' => { result = (state.regs.b as u16) + 1; state.regs.b = result as u8; }
+                'C' => { result = (state.regs.c as u16) + 1; state.regs.c = result as u8; }
+                'D' => { result = (state.regs.d as u16) + 1; state.regs.d = result as u8; }
+                'E' => { result = (state.regs.e as u16) + 1; state.regs.e = result as u8; }
+                'H' => { result = (state.regs.h as u16) + 1; state.regs.h = result as u8; }
+                'L' => { result = (state.regs.l as u16) + 1; state.regs.l = result as u8; }
+                'A' => { result = (state.regs.a as u16) + 1; state.regs.a = result as u8; }
+                'M' => {
+                    let addr = (((state.regs.h as u16) << 8) | (state.regs.l as u16)) as usize;
+                    let result = (state.memory[addr] as u16) + 1;
+                    
+                    state.memory[addr] = result as u8;
+                }   
+                _ => {}
+            }
+            
+            state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
+            state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
+            state.flags.parity = parity(result, 8);
+        }
     }
 
     pub struct ConditionFlags {
@@ -228,42 +285,8 @@ pub mod intel8080 {
                     0x00 => { self.pc += 1; } // NOP
                     0x01 => { lxi(self, 'B'); self.pc += 3; }
                     0x02 => { stax(self, 'B'); self.pc += 1; }
-                    0x03 => { 
-                        // INSTRUCTION: INX B
-                        // DESCRIPTION: 
-                        //      The 16-bit number held in register pair BC is incremented by one.
-
-                        // get the content of register pair B and C format them into 
-                        // an address in LE format and increment the value from the 
-                        // previous step by one. 
-                        let value = (((self.regs.b as u16) << 8) | (self.regs.c as u16)) + 1;
-
-                        // split the new value into two. The LO byte is assigned to
-                        // register C and the HO byte is assigned to register B. 
-                        self.regs.b = ((value & 0xff00) >> 8) as u8;
-                        self.regs.c = (value & 0x00ff) as u8;
-
-                        self.pc += 1;
-                    }
-                    0x04 => { 
-                        // INSTRUCTION: INR B
-                        // DESCRIPTION: 
-                        //      Increment register B by 1;
-
-                        // increment the value in register B by 1.
-                        let result = (self.regs.b as u16) + 1;
-
-                        // this instruction affects all the condition flags except 
-                        // the carry flag.
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 8);
-                        
-                        // load register B with the result of the computation
-                        self.regs.b = result as u8;
-
-                        self.pc += 1;
-                    }
+                    0x03 => { inx(self, 'B'); self.pc += 1; }
+                    0x04 => { inr(self, 'B'); self.pc += 1; }
                     0x05 => {
                         // INSTRUCTION: DCR B
                         // DESCRIPTION:
@@ -355,25 +378,7 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x0C => {
-                        // INSTRUCTION: INR C
-                        // DESCRIPTION: 
-                        //      Increment register C by 1;
-
-                        // increment the value in register C by 1.
-                        let result = (self.regs.c as u16) + 1;
-
-                        // this instruction affects all the condition flags except 
-                        // the carry flag.
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 8);
-                        
-                        // load register C with the result of the computation
-                        self.regs.c = result as u8;
-
-                        self.pc += 1;
-                    }
+                    0x0C => { inr(self, 'C'); self.pc += 1; }
                     0x0D => {
                         // INSTRUCTION: DCR C
                         // DESCRIPTION:
@@ -416,42 +421,8 @@ pub mod intel8080 {
                     0x10 => { self.pc += 1; }
                     0x11 => { lxi(self, 'D'); self.pc += 3; }
                     0x12 => { stax(self, 'D');  self.pc += 1; }
-                    0x13 => {
-                        // INSTRUCTION: INX D
-                        // DESCRIPTION: 
-                        //      The 16-bit number held in register pair DE is incremented by one.
-
-                        // get the content of register pair D and E format them into 
-                        // an address in LE format and increment the value from the 
-                        // previous step by one. 
-                        let value = (((self.regs.d as u16) << 8) | (self.regs.e as u16)) + 1;
-
-                        // split the new value into two. The LO byte is assigned to
-                        // register E and the HO byte is assigned to register D. 
-                        self.regs.d = ((value & 0xff00) >> 8) as u8;
-                        self.regs.e = (value & 0x00ff) as u8;
-
-                        self.pc += 1;
-                    }
-                    0x14 => {
-                        // INSTRUCTION: INR D
-                        // DESCRIPTION: 
-                        //      Increment register D by 1;
-
-                        // increment the value in register D by 1.
-                        let result = (self.regs.d as u16) + 1;
-
-                        // this instruction affects all the condition flags except 
-                        // the carry flag.
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 8);
-                        
-                        // load register B with the result of the computation
-                        self.regs.d = result as u8;
-
-                        self.pc += 1;
-                    }
+                    0x13 => { inx(self, 'D'); self.pc += 1; }
+                    0x14 => { inr(self, 'D'); self.pc += 1; }
                     0x15 => {
                         // INSTRUCTION: DCR D
                         // DESCRIPTION:
@@ -543,25 +514,7 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x1C => {
-                        // INSTRUCTION: INR E
-                        // DESCRIPTION: 
-                        //      Increment register E by 1;
-
-                        // increment the value in register E by 1.
-                        let result = (self.regs.e as u16) + 1;
-
-                        // this instruction affects all the condition flags except 
-                        // the carry flag.
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 8);
-                        
-                        // load register E with the result of the computation
-                        self.regs.e = result as u8;
-
-                        self.pc += 1;
-                    }
+                    0x1C => { inr(self, 'E'); self.pc += 1; }
                     0x1D => {
                         // INSTRUCTION: DCR E
                         // DESCRIPTION:
@@ -623,42 +576,8 @@ pub mod intel8080 {
 
                         self.pc += 3;
                     }
-                    0x23 => {
-                        // INSTRUCTION: INX H
-                        // DESCRIPTION: 
-                        //      The 16-bit number held in register pair HL is incremented by one.
-
-                        // get the content of register pair HL format them into 
-                        // an address in LE format and increment the value from the 
-                        // previous step by one. 
-                        let value = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) + 1;
-
-                        // split the new value into two. The LO byte is assigned to
-                        // register L and the HO byte is assigned to register H. 
-                        self.regs.h = ((value & 0xff00) >> 8) as u8;
-                        self.regs.l = (value & 0x00ff) as u8;
-
-                        self.pc += 1;
-                    }
-                    0x24 => {
-                        // INSTRUCTION: INR H
-                        // DESCRIPTION: 
-                        //      Increment register H by 1;
-
-                        // increment the value in register H by 1.
-                        let result = (self.regs.h as u16) + 1;
-
-                        // this instruction affects all the condition flags except 
-                        // the carry flag.
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 8);
-                        
-                        // load register H with the result of the computation
-                        self.regs.h = result as u8;
-
-                        self.pc += 1;
-                    }
+                    0x23 => { inx(self, 'H'); self.pc += 1; }
+                    0x24 => { inr(self, 'H'); self.pc += 1; }
                     0x25 => {
                         // INSTRUCTION: DCR H
                         // DESCRIPTION:
@@ -756,25 +675,7 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x2C => {
-                        // INSTRUCTION: INR L
-                        // DESCRIPTION: 
-                        //      Increment register L by 1;
-
-                        // increment the value in register L by 1.
-                        let result = (self.regs.l as u16) + 1;
-
-                        // this instruction affects all the condition flags except 
-                        // the carry flag.
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 8);
-                        
-                        // load register L with the result of the computation
-                        self.regs.l = result as u8;
-
-                        self.pc += 1;
-                    }
+                    0x2C => { inr(self, 'L'); self.pc += 1; }
                     0x2D => {
                         // INSTRUCTION: DCR L
                         // DESCRIPTION:
@@ -827,34 +728,8 @@ pub mod intel8080 {
 
                         self.pc += 3;
                     }
-                    0x33 => {
-                        // INSTRUCTION: INX SP
-                        // DESCRIPTION: 
-                        //      The 16-bit number held in register SP is incremented by one.
-
-                        self.sp += 1;
-
-                        self.pc += 1;
-                    }
-                    0x34 => {
-                        // INSTRUCTION: INR M
-                        // DESCRIPTION: 
-
-                        let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
-
-                        let result = (self.memory[addr] as u16) + 1;
-
-                        // this instruction affects all the condition flags except 
-                        // the carry flag.
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 8);
-                        
-                        // load register B with the result of the computation
-                        self.memory[addr] = result as u8;
-
-                        self.pc += 1;
-                    }
+                    0x33 => { self.sp += 1; self.pc += 1; }
+                    0x34 => { inr(self, 'M');  self.pc += 1; }
                     0x35 => {
                         // INSTRUCTION: DCR M
                         let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
@@ -912,25 +787,7 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x3C => {
-                        // INSTRUCTION: INR A
-                        // DESCRIPTION: 
-                        //      Increment register A by 1;
-
-                        // increment the value in register A by 1.
-                        let result = (self.regs.a as u16) + 1;
-
-                        // this instruction affects all the condition flags except 
-                        // the carry flag.
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 8);
-                        
-                        // load register A with the result of the computation
-                        self.regs.a = result as u8;
-
-                        self.pc += 1;
-                    }
+                    0x3C => { inr(self, 'A'); self.pc += 1; }
                     0x3D => {
                         // INSTRUCTION: DCR A
                         // DESCRIPTION:
