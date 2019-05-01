@@ -5,7 +5,7 @@ pub mod cpu {
     pub mod utils {
         pub fn parity(result: u16, size: usize) -> u8 {
             let mut counter = 0;
-            let mut res = result;
+            let mut res = result as u8;
             for _ in 0..size {
                 if (res & 0x01) == 1 { counter += 1; }
                 res >>= 1;
@@ -14,6 +14,31 @@ pub mod cpu {
             ((counter & 0x01) == 0) as u8
         }
     }
+
+    pub mod instructions {
+        use crate::intel8080::Intel8080;
+        use crate::cpu::utils::*;
+
+
+        pub fn add_to_accu(state: &mut Intel8080, byte: u8) {
+            // INSTRUCTION: ADD byte
+            // DESCRIPTION: 
+            //      The ADD In,truction adds one byte of data to the contents of the 
+            //      accumulatoL The result is stored in the accumulator Notice that the 
+            //      ADD instruction excludes the carry flag from the addition but sets the 
+            //      flag to indicate the Jutcome of the operation.
+
+            let result = (state.regs.a as u16) + (byte as u16);
+
+            state.flags.carry = (result > 0xff) as u8;
+            state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
+            state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
+            state.flags.parity = parity(result, 8);
+
+            state.regs.a = result as u8;
+        }
+    }
+
     pub struct ConditionFlags {
         pub carry: u8,
         pub aux_carry: u8,
@@ -63,6 +88,7 @@ pub mod intel8080 {
 
     use crate::cpu::{ConditionFlags, Register};
     use crate::cpu::utils::*;
+    use crate::cpu::instructions::*;
 
 
     pub struct Intel8080 {
@@ -1321,106 +1347,50 @@ pub mod intel8080 {
 
                     0x80 => {
                         // INSTRUCTION: ADD B
-                        let result = (self.regs.a as u16) + (self.regs.b as u16);
-
-                        self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 16);
-
-                        self.regs.a = result as u8;
+                        add_to_accu(self, self.regs.b);
 
                         self.pc += 1;
                     }
                     0x81 => {
                         // INSTRUCTION: ADD C
-                        let result = (self.regs.a as u16) + (self.regs.c as u16);
-
-                        self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 16);
-
-                        self.regs.a = result as u8;
+                        add_to_accu(self, self.regs.c);
 
                         self.pc += 1;
                     }
                     0x82 => {
                         // INSTRUCTION: ADD D
-                        let result = (self.regs.a as u16) + (self.regs.d as u16);
-
-                        self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 16);
-
-                        self.regs.a = result as u8;
+                        add_to_accu(self, self.regs.d);
 
                         self.pc += 1;
                     }
                     0x83 => {
                         // INSTRUCTION: ADD E
-                        let result = (self.regs.a as u16) + (self.regs.e as u16);
-
-                        self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 16);
-
-                        self.regs.a = result as u8;
+                        add_to_accu(self, self.regs.e);
 
                         self.pc += 1;
                     }
                     0x84 => {
                         // INSTRUCTION: ADD H
-                        let result = (self.regs.a as u16) + (self.regs.h as u16);
-
-                        self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 16);
-
-                        self.regs.a = result as u8;
+                        add_to_accu(self, self.regs.h);
 
                         self.pc += 1;
                     }
                     0x85 => {
                         // INSTRUCTION: ADD L
-                        let result = (self.regs.a as u16) + (self.regs.l as u16);
-
-                        self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 16);
-
-                        self.regs.a = result as u8;
+                        add_to_accu(self, self.regs.l);
 
                         self.pc += 1;
                     }
                     0x86 => {
                         // INSTRUCTION: ADD M
                         let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
-                        let result = (self.regs.a as u16) + (self.memory[addr] as u16);
-
-                        self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 16);
-
-                        self.regs.a = result as u8;
+                        add_to_accu(self, self.memory[addr]);
 
                         self.pc += 1;
                     }
                     0x87 => {
                         // INSTRUCTION: ADD A
-                        let result = (self.regs.a as u16) << 1;
-
-                        self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 16);
-
-                        self.regs.a = result as u8;
+                        add_to_accu(self, self.regs.a);
 
                         self.pc += 1;
                     }
