@@ -263,6 +263,50 @@ pub mod cpu {
             // set the carry flag
             state.flags.carry = ((result & 0xffff0000) > 0) as u8;
         }
+
+        pub fn ldax(state: &mut Intel8080, byte: char) {
+            // INSTRUCTION: LDAX byte
+            // DESCRIPTION: 
+            //      The contents of the memory location addressed by the specified register
+            //      pair replace the contents of the accumulator.
+            
+            let mut addr = 0;
+            match byte {
+                'B' => { addr = (((state.regs.b as u16) << 8) | ((state.regs.c) as u16)) as usize; }
+                'D' => { addr = (((state.regs.d as u16) << 8) | ((state.regs.e) as u16)) as usize; }
+                _ => {}
+            }
+
+            state.regs.a = state.memory[addr];
+        }
+
+        pub fn dcx(state: &mut Intel8080, byte: char) {
+            // INSTRUCTION: DCX B
+            // DESCRIPTION: 
+            //      The 16-bit number held in the specified register pair is decremented by one.
+
+            match byte {
+                'B' => {
+                    let value = (((state.regs.b as u16) << 8) | (state.regs.c as u16)) - 1;
+
+                    state.regs.b = ((value & 0xff00) >> 8) as u8;
+                    state.regs.c = (value & 0x00ff) as u8;
+                }
+                'D' => {
+                    let value = (((state.regs.d as u16) << 8) | (state.regs.e as u16)) - 1;
+ 
+                    state.regs.d = ((value & 0xff00) >> 8) as u8;
+                    state.regs.e = (value & 0x00ff) as u8;
+                }
+                'H' => {
+                    let value = (((state.regs.h as u16) << 8) | (state.regs.l as u16)) - 1;
+
+                    state.regs.h = ((value & 0xff00) >> 8) as u8;
+                    state.regs.l = (value & 0x00ff) as u8;
+                }
+                _ => {}
+            }
+        }
     }
 
     pub struct ConditionFlags {
@@ -377,37 +421,8 @@ pub mod intel8080 {
                     }
                     0x08 => { self.pc += 1; }
                     0x09 => { dad(self, 'B'); self.pc += 1; }
-                    0x0A => {
-                        // INSTRUCTION: LDAX B
-                        // DESCRIPTION: 
-                        //      The contents of the memory location addressed by registers 
-                        //      B and C, replace the contents of the accumulator.
-                        
-                        // compute the address to read from.
-                        let addr = (((self.regs.b as u16) << 8) | ((self.regs.c) as u16)) as usize;
-
-                        // load the value at that address into register A
-                        self.regs.a = self.memory[addr];
-
-                        self.pc += 1;
-                    }
-                    0x0B => {
-                        // INSTRUCTION: DCX B
-                        // DESCRIPTION: 
-                        //      The 16-bit number held in the specified register pair is decremented by one.
-  
-                        // get the content of register pair B and C format them into 
-                        // an address in LE format and decrement the value from the 
-                        // previous step by one. 
-                        let value = (((self.regs.b as u16) << 8) | (self.regs.c as u16)) - 1;
-
-                        // split the new value into two. The LO byte is assigned to
-                        // register C and the HO byte is assigned to register B. 
-                        self.regs.b = ((value & 0xff00) >> 8) as u8;
-                        self.regs.c = (value & 0x00ff) as u8;
-
-                        self.pc += 1;
-                    }
+                    0x0A => { ldax(self, 'B'); self.pc += 1; }
+                    0x0B => { dcx(self, 'B'); self.pc += 1; }
                     0x0C => { inr(self, 'C'); self.pc += 1; }
                     0x0D => { dcr(self, 'C'); self.pc += 1; }
                     0x0E => { mvi(self, 'C'); self.pc += 2; }
@@ -456,37 +471,8 @@ pub mod intel8080 {
                     }
                     0x18 => { self.pc += 1; }
                     0x19 => { dad(self, 'D'); self.pc += 1; }
-                    0x1A => {
-                        // INSTRUCTION: LDAX D
-                        // DESCRIPTION: 
-                        //      The contents of the memory location addressed by registers 
-                        //      D and E, replace the contents of the accumulator.
-                        
-                        // compute the address to read from.
-                        let addr = (((self.regs.d as u16) << 8) | ((self.regs.e) as u16)) as usize;
-
-                        // load the value at that address into register A
-                        self.regs.a = self.memory[addr];
-
-                        self.pc += 1;
-                    }
-                    0x1B => {
-                        // INSTRUCTION: DCX D
-                        // DESCRIPTION: 
-                        //      The 16-bit number held in the register pair DE is decremented by one.
-  
-                        // get the content of register pair D and E format them into 
-                        // an address in LE format and decrement the value from the 
-                        // previous step by one. 
-                        let value = (((self.regs.d as u16) << 8) | (self.regs.e as u16)) - 1;
-
-                        // split the new value into two. The LO byte is assigned to
-                        // register E and the HO byte is assigned to register D. 
-                        self.regs.d = ((value & 0xff00) >> 8) as u8;
-                        self.regs.e = (value & 0x00ff) as u8;
-
-                        self.pc += 1;
-                    }
+                    0x1A => { ldax(self, 'D'); self.pc += 1; }
+                    0x1B => { dcx(self, 'D'); self.pc += 1; }
                     0x1C => { inr(self, 'E'); self.pc += 1; }
                     0x1D => { dcr(self, 'E'); self.pc += 1; }
                     0x1E => { mvi(self, 'E'); self.pc += 2; }
@@ -575,23 +561,7 @@ pub mod intel8080 {
 
                         self.pc += 3;
                     }
-                    0x2B => {
-                        // INSTRUCTION: DCX H
-                        // DESCRIPTION: 
-                        //      The 16-bit number held in the register pair HL is decremented by one.
-  
-                        // get the content of register pair HL format them into 
-                        // an address in LE format and decrement the value from the 
-                        // previous step by one. 
-                        let value = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) - 1;
-
-                        // split the new value into two. The LO byte is assigned to
-                        // register L and the HO byte is assigned to register H. 
-                        self.regs.h = ((value & 0xff00) >> 8) as u8;
-                        self.regs.l = (value & 0x00ff) as u8;
-
-                        self.pc += 1;
-                    }
+                    0x2B => { dcx(self, 'H'); self.pc += 1; }
                     0x2C => { inr(self, 'L'); self.pc += 1; }
                     0x2D => { dcr(self, 'L'); self.pc += 1; }
                     0x2E => { mvi(self, 'L'); self.pc += 2; }
@@ -648,12 +618,7 @@ pub mod intel8080 {
 
                         self.pc += 3;
                     }
-                    0x3B => {
-                        // INSTRUCTION: DCX SP
-                        self.sp -= 1;
-
-                        self.pc += 1;
-                    }
+                    0x3B => { self.sp -= 1; self.pc += 1; }
                     0x3C => { inr(self, 'A'); self.pc += 1; }
                     0x3D => { dcr(self, 'A'); self.pc += 1; }
                     0x3E => { mvi(self, 'A'); self.pc += 2; }
