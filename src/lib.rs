@@ -55,6 +55,88 @@ pub mod cpu {
 
             state.regs.a = result as u8;
         }
+
+        pub fn lxi(state: &mut Intel8080, byte: char) {
+            // INSTRUCTION: LXI byte
+            // DESCRIPTION:
+            //      LXI is a three-byte instruction; its second and third bytes contain the source 
+            //      data to be loaded into a register pair. LXI loads a register pair by copying its 
+            //      second and third bytes into the specified destination register pair.
+
+            match byte {
+                'B' => {
+                    // load bytes into register B and C
+                    state.regs.b = state.memory[state.pc + 2];
+                    state.regs.c = state.memory[state.pc + 1];
+                }
+                'D' => {
+                    // load bytes into register D and E
+                    state.regs.d = state.memory[state.pc + 2];
+                    state.regs.e = state.memory[state.pc + 1];
+                }
+                'H' => {
+                    // load bytes into register H and L
+                    state.regs.h = state.memory[state.pc + 2];
+                    state.regs.l = state.memory[state.pc + 1];
+                }
+                'S' => {
+                    // load bytes into th stack pointer (SP)
+                    state.sp = (((state.memory[state.pc + 2] as u16) << 8) | 
+                                (state.memory[state.pc + 1] as u16)) as usize;
+                }
+                _ => {}
+            }
+        }
+ 
+        pub fn stax(state: &mut Intel8080, byte: char) {
+            // INSTRUCTION: STAX byte
+            // DESCRIPTION: 
+            //      The STAX ins :ruction stores a copy of the contents of the accumulator into the memory location addressed
+            //      by register pai B or register pair D.
+
+            let mut addr = 0;
+            match byte {
+                'B' => {
+                    // get the content of register pair B and C
+                    // format them into an address in LE format.
+                    addr = (((state.regs.b as u16) << 8) | 
+                            (state.regs.c as u16)) as usize;
+                }
+                'D' => {
+                    // get the content of register pair B and C
+                    // format them into an address in LE format.
+                    addr = (((state.regs.d as u16) << 8) | 
+                            (state.regs.e as u16)) as usize;
+                }
+                _ => {}
+            }
+            
+            // get the value in the A register and store this
+            // value at the address created in the previous step.
+            state.memory[addr] = state.regs.a;
+        }
+
+        pub fn mvi(state: &mut Intel8080, byte: char) {
+            // INSTRUCTION: MVI byte
+            // DESCRIPTION:
+            //      the immediate data byte is stored in register specified. 
+            //      No condition flags are affected. 
+
+            match byte {
+                'B' => { state.regs.b = state.memory[state.pc + 1]; }
+                'C' => { state.regs.c = state.memory[state.pc + 1]; }
+                'D' => { state.regs.d = state.memory[state.pc + 1]; }
+                'E' => { state.regs.e = state.memory[state.pc + 1]; }
+                'H' => { state.regs.h = state.memory[state.pc + 1]; }
+                'L' => { state.regs.l = state.memory[state.pc + 1]; }
+                'A' => { state.regs.a = state.memory[state.pc + 1]; }
+                'M' => { 
+                    let addr = (((state.regs.h as u16) << 8) | (state.regs.l as u16)) as usize;
+                    state.memory[addr] = state.memory[state.pc + 1]; 
+                }
+                _ => {}
+            }   
+        }
     }
 
     pub struct ConditionFlags {
@@ -144,34 +226,8 @@ pub mod intel8080 {
             while self.memory[self.pc] != 0x76 { // while opcode != HLT (0x76)
                 match self.memory[self.pc] {
                     0x00 => { self.pc += 1; } // NOP
-                    0x01 => { 
-                        // INSTRUCTION: LXI B
-                        // DESCRIPTION: 
-                        //      Load 2 next bytes into registers B and C. 
-
-                        // load bytes into register B and C
-                        self.regs.b = self.memory[self.pc + 2];
-                        self.regs.c = self.memory[self.pc + 1];
-
-                        self.pc += 3;
-                    }
-                    0x02 => { 
-                        // INSTRUCTION: STAX B
-                        // DESCRIPTION: 
-                        //      The contents of the accumulator are stored in the memory 
-                        //      location addressed by register pair BC
-
-                        // get the content of register pair B and C
-                        // format them into an address in LE format.
-                        let addr = (((self.regs.b as u16) << 8) | 
-                                    (self.regs.c as u16)) as usize;
-
-                        // get the value in the A register and store this
-                        // value at the address created in the previous step.
-                        self.memory[addr] = self.regs.a;
-
-                        self.pc += 1;
-                    }
+                    0x01 => { lxi(self, 'B'); self.pc += 3; }
+                    0x02 => { stax(self, 'B'); self.pc += 1; }
                     0x03 => { 
                         // INSTRUCTION: INX B
                         // DESCRIPTION: 
@@ -227,17 +283,7 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x06 => { 
-                        // INSTRUCTION: MVI B
-                        // DESCRIPTION:
-                        //      the immediate data byte is stored in register B. 
-                        //      No condition flags are affected. 
-
-                        // load the next byte into register B
-                        self.regs.b = self.memory[self.pc + 1];
-
-                        self.pc += 2;
-                    }
+                    0x06 => { mvi(self, 'B'); self.pc += 2; }
                     0x07 => { 
                         // INSTRUCTION: RLC
                         // DESCRIPTION:
@@ -347,17 +393,7 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x0E => {
-                        // INSTRUCTION: MVI C
-                        // DESCRIPTION:
-                        //      the immediate data byte is stored in register C. 
-                        //      No condition flags are affected. 
-
-                        // load the next byte into register C
-                        self.regs.c = self.memory[self.pc + 1];
-
-                        self.pc += 2;
-                    }
+                    0x0E => { mvi(self, 'C'); self.pc += 2; }
                     0x0F => {
                         // INSTRUCTION: RRC
                         // DESCRIPTION:
@@ -378,34 +414,8 @@ pub mod intel8080 {
 
 
                     0x10 => { self.pc += 1; }
-                    0x11 => {
-                        // INSTRUCTION: LXI D
-                        // DESCRIPTION: 
-                        //      Load the next two bytes into registers D and E. 
-
-                        // load bytes into register D and E
-                        self.regs.d = self.memory[self.pc + 2];
-                        self.regs.e = self.memory[self.pc + 1];
-
-                        self.pc += 3;
-                    }
-                    0x12 => {
-                        // INSTRUCTION: STAX D
-                        // DESCRIPTION: 
-                        //      The contents of the accumulator are stored in the memory 
-                        //      location addressed by register pair DE
-
-                        // get the content of register pair DE and compute the address
-                        // according to the LE format.
-                        let addr = (((self.regs.d as u16) << 8) | 
-                                    (self.regs.e as u16)) as usize;
-
-                        // get the value in the A register and store this
-                        // value at the address created in the previous step.
-                        self.memory[addr] = self.regs.a;
-
-                        self.pc += 1;
-                    }
+                    0x11 => { lxi(self, 'D'); self.pc += 3; }
+                    0x12 => { stax(self, 'D');  self.pc += 1; }
                     0x13 => {
                         // INSTRUCTION: INX D
                         // DESCRIPTION: 
@@ -461,17 +471,7 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x16 => {
-                        // INSTRUCTION: MVI D
-                        // DESCRIPTION:
-                        //      the immediate data byte is stored in register D. 
-                        //      No condition flags are affected. 
-
-                        // load the next byte into register D
-                        self.regs.d = self.memory[self.pc + 1];
-
-                        self.pc += 2;
-                    }
+                    0x16 => { mvi(self, 'D'); self.pc += 2; }
                     0x17 => {
                         // INSTRUCTION: RAL
                         // DESCRIPTION: 
@@ -581,17 +581,7 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x1E => {
-                        // INSTRUCTION: MVI E
-                        // DESCRIPTION:
-                        //      the immediate data byte is stored in register E. 
-                        //      No condition flags are affected. 
-
-                        // load the next byte into register E
-                        self.regs.e = self.memory[self.pc + 1];
-
-                        self.pc += 2;
-                    }
+                    0x1E => { mvi(self, 'E'); self.pc += 2; }
                     0x1F => {
                         // INSTRUCTION: RAR
                         // DESCRIPTION: 
@@ -614,12 +604,7 @@ pub mod intel8080 {
                     0x20 => { self.pc += 1; }
                     0x21 => {
                         // INSTRUCTION: LXI H
-                        // DESCRIPTION: 
-                        //      Load the next two bytes into registers H and L. 
-
-                        // load bytes into register H and L
-                        self.regs.h = self.memory[self.pc + 2];
-                        self.regs.l = self.memory[self.pc + 1];
+                        lxi(self, 'H');
 
                         self.pc += 3;
                     }
@@ -693,17 +678,7 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x26 => {
-                        // INSTRUCTION: MVI H
-                        // DESCRIPTION:
-                        //      the immediate data byte is stored in register H. 
-                        //      No condition flags are affected. 
-
-                        // load the next byte into register H
-                        self.regs.h = self.memory[self.pc + 1];
-
-                        self.pc += 2;
-                    }
+                    0x26 => { mvi(self, 'H'); self.pc += 2; }
                     0x27 => {
                         // INSTRUCTION: DAA
                         // DESCRIPTION:
@@ -819,17 +794,7 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x2E => {
-                        // INSTRUCTION: MVI L
-                        // DESCRIPTION:
-                        //      the immediate data byte is stored in register L. 
-                        //      No condition flags are affected. 
-
-                        // load the next byte into register L
-                        self.regs.l = self.memory[self.pc + 1];
-
-                        self.pc += 2;
-                    }
+                    0x2E => { mvi(self, 'L'); self.pc += 2; }
                     0x2F => {
                         // INSTRUCTION: CMA
                         // DESCRIPTION: 
@@ -845,13 +810,8 @@ pub mod intel8080 {
                     0x30 => { self.pc += 1; }
                     0x31 => {
                         // INSTRUCTION: LXI SP
-                        // DESCRIPTION: 
-                        //      Load the next two bytes into the stack pointer. 
-
-                        // load bytes into register H and L
-                        self.sp = (((self.memory[self.pc + 2] as u16) << 8) | 
-                                   (self.memory[self.pc + 1] as u16)) as usize;
-
+                        lxi(self, 'S');
+                        
                         self.pc += 3;
                     }
                     0x32 => {
@@ -912,14 +872,7 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x36 => {
-                        // INSTRUCTION: MVI M
-
-                        let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
-                        self.memory[addr] = self.memory[self.pc + 1];
-
-                        self.pc += 2;
-                    }
+                    0x36 => {mvi(self, 'M'); self.pc += 2; }
                     0x37 => {
                         // INSTRUCTION: STC
                         self.flags.carry = 1;
@@ -997,17 +950,7 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x3E => {
-                        // INSTRUCTION: MVI A
-                        // DESCRIPTION:
-                        //      the immediate data byte is stored in register A. 
-                        //      No condition flags are affected. 
-
-                        // load the next byte into register A
-                        self.regs.a = self.memory[self.pc + 1];
-
-                        self.pc += 2;
-                    }
+                    0x3E => { mvi(self, 'A'); self.pc += 2; }
                     0x3F => {
                         // INSTRUCTION: CMC
                         self.flags.carry = !self.flags.carry;
@@ -1153,25 +1096,10 @@ pub mod intel8080 {
                         self.regs.e = self.regs.c;
                         self.pc += 1;
                     }
-                    0x5A => {
-                        // INSTRUCTION: MOV E, D
-                        self.regs.e = self.regs.d;
-                        self.pc += 1;
-                    }
-                    0x5B => {
-                        // INSTRUCTION: MOV E, E
-                        self.pc += 1;
-                    }
-                    0x5C => {
-                        // INSTRUCTION: MOV E, H
-                        self.regs.e = self.regs.h;
-                        self.pc += 1;
-                    }
-                    0x5D => {
-                        // INSTRUCTION: MOV E, L
-                        self.regs.e = self.regs.l;
-                        self.pc += 1;
-                    }
+                    0x5A => { self.regs.e = self.regs.d; self.pc += 1; }
+                    0x5B => { self.pc += 1; }
+                    0x5C => { self.regs.e = self.regs.h; self.pc += 1; }
+                    0x5D => { self.regs.e = self.regs.l; self.pc += 1; }
                     0x5E => {
                         // INSTRUCTION: MOV E, M
                         let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
@@ -1179,42 +1107,15 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x5F => {
-                        // INSTRUCTION: MOV E, A
-                        self.regs.e = self.regs.a;
-                        self.pc += 1;
-                    }
+                    0x5F => { self.regs.e = self.regs.a; self.pc += 1; }
 
                     
-                    0x60 => {
-                        // INSTRUCTION: MOV H, B
-                        self.regs.h = self.regs.b;
-                        self.pc += 1;
-                    }
-                    0x61 => {
-                        // INSTRUCTION: MOV H, C
-                        self.regs.h = self.regs.c;
-                        self.pc += 1;
-                    }
-                    0x62 => {
-                        // INSTRUCTION: MOV H, D
-                        self.regs.h = self.regs.d;
-                        self.pc += 1;
-                    }
-                    0x63 => {
-                        // INSTRUCTION: MOV H, E
-                        self.regs.h = self.regs.e;
-                        self.pc += 1;
-                    }
-                    0x64 => {
-                        // INSTRUCTION: MOV H, H
-                        self.pc += 1;
-                    }
-                    0x65 => {
-                        // INSTRUCTION: MOV H, L
-                        self.regs.h = self.regs.l;
-                        self.pc += 1;
-                    }
+                    0x60 => { self.regs.h = self.regs.b; self.pc += 1; }
+                    0x61 => { self.regs.h = self.regs.c; self.pc += 1; }
+                    0x62 => { self.regs.h = self.regs.d; self.pc += 1; }
+                    0x63 => { self.regs.h = self.regs.e; self.pc += 1; }
+                    0x64 => { self.pc += 1; }
+                    0x65 => { self.regs.h = self.regs.l; self.pc += 1; }
                     0x66 => {
                         // INSTRUCTION: MOV H, M
                         let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
@@ -1222,40 +1123,13 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x67 => {
-                        // INSTRUCTION: MOV H, A
-                        self.regs.h = self.regs.a;
-                        self.pc += 1;
-                    }
-                    0x68 => {
-                        // INSTRUCTION: MOV L, B
-                        self.regs.l = self.regs.b;
-                        self.pc += 1;
-                    }
-                    0x69 => {
-                        // INSTRUCTION: MOV L, C
-                        self.regs.l = self.regs.c;
-                        self.pc += 1;
-                    }
-                    0x6A => {
-                        // INSTRUCTION: MOV L, D
-                        self.regs.l = self.regs.d;
-                        self.pc += 1;
-                    }
-                    0x6B => {
-                        // INSTRUCTION: MOV L, E
-                        self.regs.l = self.regs.e;
-                        self.pc += 1;
-                    }
-                    0x6C => {
-                        // INSTRUCTION: MOV L, H
-                        self.regs.l = self.regs.h;
-                        self.pc += 1;
-                    }
-                    0x6D => {
-                        // INSTRUCTION: MOV L, L
-                        self.pc += 1;
-                    }
+                    0x67 => { self.regs.h = self.regs.a; self.pc += 1; }
+                    0x68 => { self.regs.l = self.regs.b; self.pc += 1; }
+                    0x69 => { self.regs.l = self.regs.c; self.pc += 1; }
+                    0x6A => { self.regs.l = self.regs.d; self.pc += 1; }
+                    0x6B => { self.regs.l = self.regs.e; self.pc += 1; }
+                    0x6C => { self.regs.l = self.regs.h; self.pc += 1; }
+                    0x6D => { self.pc += 1; }
                     0x6E => {
                         // INSTRUCTION: MOV L, M
                         let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
@@ -1263,11 +1137,7 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x6F => {
-                        // INSTRUCTION: MOV L, A
-                        self.regs.l = self.regs.a;
-                        self.pc += 1;
-                    }
+                    0x6F => { self.regs.l = self.regs.a; self.pc += 1; }
 
 
                     0x70 => {
@@ -1320,36 +1190,12 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x78 => {
-                        // INSTRUCTION: MOV A, B
-                        self.regs.a = self.regs.b;
-                        self.pc += 1;
-                    }
-                    0x79 => {
-                        // INSTRUCTION: MOV A, C
-                        self.regs.a = self.regs.c;
-                        self.pc += 1;
-                    }
-                    0x7A => {
-                        // INSTRUCTION: MOV A, D
-                        self.regs.a = self.regs.d;
-                        self.pc += 1;
-                    }
-                    0x7B => {
-                        // INSTRUCTION: MOV A, E
-                        self.regs.a = self.regs.e;
-                        self.pc += 1;
-                    }
-                    0x7C => {
-                        // INSTRUCTION: MOV A, H
-                        self.regs.a = self.regs.h;
-                        self.pc += 1;
-                    }
-                    0x7D => {
-                        // INSTRUCTION: MOV A, L
-                        self.regs.a = self.regs.l;
-                        self.pc += 1;
-                    }
+                    0x78 => { self.regs.a = self.regs.b; self.pc += 1; }
+                    0x79 => { self.regs.a = self.regs.c; self.pc += 1; }
+                    0x7A => { self.regs.a = self.regs.d; self.pc += 1; }
+                    0x7B => { self.regs.a = self.regs.e; self.pc += 1; }
+                    0x7C => { self.regs.a = self.regs.h; self.pc += 1; }
+                    0x7D => { self.regs.a = self.regs.l; self.pc += 1; }
                     0x7E => {
                         // INSTRUCTION: MOV A, M
                         let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
@@ -1357,48 +1203,15 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x7F => {
-                        // INSTRUCTION: MOV A, A
-                        self.pc += 1;
-                    }
+                    0x7F => { self.pc += 1; }
                 
 
-                    0x80 => {
-                        // INSTRUCTION: ADD B
-                        add_to_accu(self, self.regs.b);
-
-                        self.pc += 1;
-                    }
-                    0x81 => {
-                        // INSTRUCTION: ADD C
-                        add_to_accu(self, self.regs.c);
-
-                        self.pc += 1;
-                    }
-                    0x82 => {
-                        // INSTRUCTION: ADD D
-                        add_to_accu(self, self.regs.d);
-
-                        self.pc += 1;
-                    }
-                    0x83 => {
-                        // INSTRUCTION: ADD E
-                        add_to_accu(self, self.regs.e);
-
-                        self.pc += 1;
-                    }
-                    0x84 => {
-                        // INSTRUCTION: ADD H
-                        add_to_accu(self, self.regs.h);
-
-                        self.pc += 1;
-                    }
-                    0x85 => {
-                        // INSTRUCTION: ADD L
-                        add_to_accu(self, self.regs.l);
-
-                        self.pc += 1;
-                    }
+                    0x80 => { add_to_accu(self, self.regs.b); self.pc += 1; }
+                    0x81 => { add_to_accu(self, self.regs.c); self.pc += 1; }
+                    0x82 => { add_to_accu(self, self.regs.d); self.pc += 1; }
+                    0x83 => { add_to_accu(self, self.regs.e); self.pc += 1; }
+                    0x84 => { add_to_accu(self, self.regs.h); self.pc += 1; }
+                    0x85 => { add_to_accu(self, self.regs.l); self.pc += 1; }
                     0x86 => {
                         // INSTRUCTION: ADD M
                         let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
@@ -1406,47 +1219,13 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x87 => {
-                        // INSTRUCTION: ADD A
-                        add_to_accu(self, self.regs.a);
-
-                        self.pc += 1;
-                    }
-                    0x88 => {
-                        // INSTRUCTION: ADC B
-                        adc(self, self.regs.b);
-
-                        self.pc += 1;
-                    }
-                    0x89 => {
-                        // INSTRUCTION: ADC C
-                        adc(self, self.regs.c);
-
-                        self.pc += 1;
-                    }
-                    0x8A => {
-                        // INSTRUCTION: ADC D
-                        adc(self, self.regs.d);
-
-                        self.pc += 1;
-                    }
-                    0x8B => {
-                        // INSTRUCTION: ADC E
-                        adc(self, self.regs.e);
-                        self.pc += 1;
-                    }
-                    0x8C => {
-                        // INSTRUCTION: ADC H
-                        adc(self, self.regs.h);
-
-                        self.pc += 1;
-                    }
-                    0x8D => {
-                        // INSTRUCTION: ADC L
-                        adc(self, self.regs.l);
-
-                        self.pc += 1;
-                    }
+                    0x87 => { add_to_accu(self, self.regs.a); self.pc += 1; }
+                    0x88 => { adc(self, self.regs.b); self.pc += 1; }
+                    0x89 => { adc(self, self.regs.c); self.pc += 1; }
+                    0x8A => { adc(self, self.regs.d); self.pc += 1; }
+                    0x8B => { adc(self, self.regs.e); self.pc += 1; }
+                    0x8C => { adc(self, self.regs.h); self.pc += 1; }
+                    0x8D => { adc(self, self.regs.l); self.pc += 1; }
                     0x8E => {
                         // INSTRUCTION: ADC M
                         let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
@@ -1454,12 +1233,7 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0x8F => {
-                        // INSTRUCTION: ADD A
-                        adc(self, self.regs.a);
-
-                        self.pc += 1;
-                    }
+                    0x8F => { adc(self, self.regs.a); self.pc += 1; }
                     
                     _ => {}
 
