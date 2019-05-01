@@ -222,6 +222,47 @@ pub mod cpu {
             state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
             state.flags.parity = parity(result, 8);
         }
+
+        pub fn dad(state: &mut Intel8080, byte: char) {
+            // INSTRUCTION: DAD byte
+            // DESCRIPTION:
+            //      The 16-bit number in the specified register pair is added to the 
+            //      16-bit number held in the H and L registers using two's complement 
+            //      arithmetic. The result replaces the contents in the H and L registers. 
+
+            let mut result = 0;
+            let hl = ((state.regs.h as u32) << 8) | (state.regs.l as u32);
+            match byte {
+                'B' => {
+                    let bc = ((state.regs.b as u32) << 8) | (state.regs.c as u32);
+                    
+                    result =  bc + hl;
+                    state.regs.h = ((result & 0x0000ff00) >> 8) as u8;
+                    state.regs.l = (result & 0x000000ff) as u8;
+                }
+                'D' => {
+                    let de = ((state.regs.d as u32) << 8) | (state.regs.e as u32);
+
+                    result =  de + hl;
+                    state.regs.h = ((result & 0x0000ff00) >> 8) as u8;
+                    state.regs.l = (result & 0x000000ff) as u8;
+                }
+                'H' => {
+                    let result =  hl << 1;
+                    state.regs.h = ((result & 0x0000ff00) >> 8) as u8;
+                    state.regs.l = (result & 0x000000ff) as u8;
+                }
+                'S' => {
+                    let result =  (state.sp as u32) + hl;
+                    state.regs.h = ((result & 0x0000ff00) >> 8) as u8;
+                    state.regs.l = (result & 0x000000ff) as u8;
+                }
+                _ => {}
+            }
+
+            // set the carry flag
+            state.flags.carry = ((result & 0xffff0000) > 0) as u8;
+        }
     }
 
     pub struct ConditionFlags {
@@ -335,28 +376,7 @@ pub mod intel8080 {
                         self.pc += 1;
                     }
                     0x08 => { self.pc += 1; }
-                    0x09 => { 
-                        // INSTRUCTION: DAD B
-                        // DESCRIPTION:
-                        //      The 16-bit number in the specified register pair is added to the 
-                        //      16-bit number held in the H and L registers using two's complement 
-                        //      arithmetic. The result replaces the contents in the H and L registers. 
-
-                        // create the value of the register pairs for BC and HL
-                        let bc = ((self.regs.b as u32) << 8) | (self.regs.c as u32);
-                        let hl = ((self.regs.h as u32) << 8) | (self.regs.l as u32);
-
-                        // add the values in the register pairs BC and HL. 
-                        // put the HO byte into H and the LO bytes into L.
-                        let result =  bc + hl;
-                        self.regs.h = ((result & 0x0000ff00) >> 8) as u8;
-                        self.regs.l = (result & 0x000000ff) as u8;
-
-                        // set the carry flag
-                        self.flags.carry = ((result & 0xffff0000) > 0) as u8;
-
-                        self.pc += 1;
-                    }
+                    0x09 => { dad(self, 'B'); self.pc += 1; }
                     0x0A => {
                         // INSTRUCTION: LDAX B
                         // DESCRIPTION: 
@@ -435,28 +455,7 @@ pub mod intel8080 {
 
                     }
                     0x18 => { self.pc += 1; }
-                    0x19 => {
-                        // INSTRUCTION: DAD D
-                        // DESCRIPTION:
-                        //      The 16-bit number in the register pair DE is added to the 
-                        //      16-bit number held in the H and L registers using two's complement 
-                        //      arithmetic. The result replaces the contents in the H and L registers. 
-
-                        // create the value of the register pairs for DE and HL
-                        let de = ((self.regs.d as u32) << 8) | (self.regs.e as u32);
-                        let hl = ((self.regs.h as u32) << 8) | (self.regs.l as u32);
-
-                        // add the values in the register pairs DE and HL. 
-                        // put the HO byte into H and the LO bytes into L.
-                        let result =  de + hl;
-                        self.regs.h = ((result & 0x0000ff00) >> 8) as u8;
-                        self.regs.l = (result & 0x000000ff) as u8;
-
-                        // set the carry flag
-                        self.flags.carry = ((result & 0xffff0000) > 0) as u8;
-
-                        self.pc += 1;
-                    }
+                    0x19 => { dad(self, 'D'); self.pc += 1; }
                     0x1A => {
                         // INSTRUCTION: LDAX D
                         // DESCRIPTION: 
@@ -559,27 +558,7 @@ pub mod intel8080 {
                         self.pc += 1;
                     }
                     0x28 => { self.pc += 1; }
-                    0x29 => {
-                        // INSTRUCTION: DAD H
-                        // DESCRIPTION:
-                        //      The 16-bit number in the specified register pair is added to the 
-                        //      16-bit number held in the H and L registers using two's complement 
-                        //      arithmetic. The result replaces the contents in the H and L registers. 
-
-                        // create the value of the register pairs HL
-                        let hl = ((self.regs.h as u32) << 8) | (self.regs.l as u32);
-
-                        // add the values in the register pairs BC and HL. 
-                        // put the HO byte into H and the LO bytes into L.
-                        let result =  hl << 1;
-                        self.regs.h = ((result & 0x0000ff00) >> 8) as u8;
-                        self.regs.l = (result & 0x000000ff) as u8;
-
-                        // set the carry flag
-                        self.flags.carry = ((result & 0xffff0000) > 0) as u8;
-
-                        self.pc += 1;
-                    }
+                    0x29 => { dad(self, 'H'); self.pc += 1; }
                     0x2A => {
                         // INSTRUCTION: LHLD
                         // DESCRIPTION: 
@@ -659,23 +638,7 @@ pub mod intel8080 {
                         self.pc += 1;
                     }
                     0x38 => { self.pc += 1; }
-                    0x39 => {
-                        // INSTRUCTION: DAD SP
-
-                        // create the value of the register pairs for BC and HL
-                        let hl = ((self.regs.h as u32) << 8) | (self.regs.l as u32);
-
-                        // add the values in the register pairs BC and HL. 
-                        // put the HO byte into H and the LO bytes into L.
-                        let result =  (self.sp as u32) + hl;
-                        self.regs.h = ((result & 0x0000ff00) >> 8) as u8;
-                        self.regs.l = (result & 0x000000ff) as u8;
-
-                        // set the carry flag
-                        self.flags.carry = ((result & 0xffff0000) > 0) as u8;
-
-                        self.pc += 1;
-                    }
+                    0x39 => { dad(self, 'S'); self.pc += 1;}
                     0x3A => {
                         // INSTRUCTION: LDA
                         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
