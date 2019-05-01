@@ -391,3 +391,42 @@ fn emulate_add() {
     assert_eq!(machine.flags.parity, 1);
     assert_eq!(machine.flags.carry, 0);
 }
+
+#[test]
+fn emulate_adc() {
+    let mut machine = Intel8080::new();
+    machine.flags.carry = 0;
+    machine.regs.a = 0x42;
+    machine.regs.b = 0x3d;
+
+    machine.memory = vec![
+        0x88,
+        0x76
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.regs.a, 0x7f);
+    assert_eq!(machine.flags.sign, 0);
+    assert_eq!(machine.flags.zero, 0);
+    assert_eq!(machine.flags.parity, 0);
+    assert_eq!(machine.flags.carry, 0);
+
+    let mut machine = Intel8080::new();
+    machine.regs.a = 0x42;
+    machine.regs.b = 0x3d;
+    machine.flags.carry = 1;
+
+    machine.memory = vec![
+        0x88,
+        0x76
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.regs.a, 0x80);
+    assert_eq!(machine.flags.sign, 1);
+    assert_eq!(machine.flags.zero, 0);
+    assert_eq!(machine.flags.parity, 0);
+    assert_eq!(machine.flags.carry, 0);
+}
