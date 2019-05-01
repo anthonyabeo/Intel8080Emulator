@@ -37,6 +37,24 @@ pub mod cpu {
 
             state.regs.a = result as u8;
         }
+
+        pub fn adc(state: &mut Intel8080, byte: u8) {
+            // INSTRUCTION: ADC byte
+            // DESCRIPTION: 
+            //      The ADC inst ruction adds one byte of data plus the setting of the 
+            //      carry flag to the contents of the accumulator. The result istored 
+            //      in the accumulator ADC then updates the setting of the carry flag 
+            //      to indicate the outcome of the operaton.
+
+            let result = (state.regs.a as u16) + (byte as u16) + (state.flags.carry as u16);
+
+            state.flags.carry = (result > 0xff) as u8;
+            state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
+            state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
+            state.flags.parity = parity(result, 16);
+
+            state.regs.a = result as u8;
+        }
     }
 
     pub struct ConditionFlags {
@@ -1396,113 +1414,49 @@ pub mod intel8080 {
                     }
                     0x88 => {
                         // INSTRUCTION: ADC B
-                        let result = (self.regs.a as u16) + (self.regs.b as u16) + 
-                                                            (self.flags.carry as u16);
-
-                        self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 16);
-
-                        self.regs.a = result as u8;
+                        adc(self, self.regs.b);
 
                         self.pc += 1;
                     }
                     0x89 => {
                         // INSTRUCTION: ADC C
-                        let result = (self.regs.a as u16) + (self.regs.c as u16) + 
-                                                            (self.flags.carry as u16);
-
-                        self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 16);
-
-                        self.regs.a = result as u8;
+                        adc(self, self.regs.c);
 
                         self.pc += 1;
                     }
                     0x8A => {
                         // INSTRUCTION: ADC D
-                        let result = (self.regs.a as u16) + (self.regs.d as u16) + 
-                                                            (self.flags.carry as u16);
-
-                        self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 16);
-
-                        self.regs.a = result as u8;
+                        adc(self, self.regs.d);
 
                         self.pc += 1;
                     }
                     0x8B => {
                         // INSTRUCTION: ADC E
-                        let result = (self.regs.a as u16) + (self.regs.e as u16) + 
-                                                            (self.flags.carry as u16);
-
-                        self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 16);
-
-                        self.regs.a = result as u8;
-
+                        adc(self, self.regs.e);
                         self.pc += 1;
                     }
                     0x8C => {
                         // INSTRUCTION: ADC H
-                        let result = (self.regs.a as u16) + (self.regs.h as u16) + 
-                                                            (self.flags.carry as u16);
-
-                        self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 16);
-
-                        self.regs.a = result as u8;
+                        adc(self, self.regs.h);
 
                         self.pc += 1;
                     }
                     0x8D => {
                         // INSTRUCTION: ADC L
-                        let result = (self.regs.a as u16) + (self.regs.l as u16) + 
-                                                            (self.flags.carry as u16);
-
-                        self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 16);
-
-                        self.regs.a = result as u8;
+                        adc(self, self.regs.l);
 
                         self.pc += 1;
                     }
                     0x8E => {
                         // INSTRUCTION: ADC M
                         let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
-                        let result = (self.regs.a as u16) + (self.memory[addr] as u16) + 
-                                                            (self.flags.carry as u16);
-
-                        self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 16);
-
-                        self.regs.a = result as u8;
+                        adc(self, self.memory[addr]);
 
                         self.pc += 1;
                     }
                     0x8F => {
                         // INSTRUCTION: ADD A
-                        let result = ((self.regs.a as u16) << 1) + (self.flags.carry as u16);
-
-                        self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 16);
-
-                        self.regs.a = result as u8;
+                        adc(self, self.regs.a);
 
                         self.pc += 1;
                     }
