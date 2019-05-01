@@ -471,3 +471,83 @@ fn emulate_sbb() {
     assert_eq!(machine.flags.parity, 0);
     assert_eq!(machine.flags.carry, 0);
 }
+
+#[test]
+fn emulate_ana() {
+    let mut machine = Intel8080::new();
+    machine.regs.a = 0xfc;
+    machine.regs.b = 0x0f;
+
+     machine.memory = vec![
+        0xa0,
+        0x76
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.regs.a, 0x0c);
+    assert_eq!(machine.flags.sign, 0);
+    assert_eq!(machine.flags.zero, 0);
+    assert_eq!(machine.flags.parity, 1);
+    assert_eq!(machine.flags.carry, 0);
+}
+
+#[test]
+fn emulate_xra() {
+    let mut machine = Intel8080::new();
+    machine.regs.a = 0x5c;
+    machine.regs.b = 0x78;
+
+     machine.memory = vec![
+        0xa8,
+        0x76
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.regs.a, 0x24);
+    assert_eq!(machine.flags.sign, 0);
+    assert_eq!(machine.flags.zero, 0);
+    assert_eq!(machine.flags.parity, 1);
+    assert_eq!(machine.flags.carry, 0);
+}
+
+#[test]
+fn emulate_ora() {
+    let mut machine = Intel8080::new();
+    machine.regs.a = 0x33;
+    machine.regs.b = 0x0f;
+
+     machine.memory = vec![
+        0xb0,
+        0x76
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.regs.a, 0x3f);
+    assert_eq!(machine.flags.sign, 0);
+    assert_eq!(machine.flags.zero, 0);
+    assert_eq!(machine.flags.parity, 1);
+    assert_eq!(machine.flags.carry, 0);
+}
+
+#[test]
+fn emulate_cmp() {
+    let mut machine = Intel8080::new();
+    machine.regs.a = 0x0a;
+    machine.regs.b = 0x05;
+
+     machine.memory = vec![
+        0xb8,
+        0x76
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.regs.a, 0x05);
+    assert_eq!(machine.flags.sign, 0);
+    assert_eq!(machine.flags.zero, 0);
+    assert_eq!(machine.flags.parity, 1);
+    assert_eq!(machine.flags.carry, 0);
+}

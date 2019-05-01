@@ -343,6 +343,50 @@ pub mod cpu {
 
             state.regs.a = result as u8;
         }
+
+        pub fn ana(state: &mut Intel8080, byte: u8) {
+            let result = (state.regs.a as u16) & (byte as u16);
+
+            state.flags.carry = (result > 0xff) as u8;
+            state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
+            state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
+            state.flags.parity = parity(result, 8);
+
+            state.regs.a = result as u8;
+        }
+
+        pub fn xra(state: &mut Intel8080, byte: u8) {
+            let result = (state.regs.a as u16) ^ (byte as u16);
+
+            state.flags.carry = (result > 0xff) as u8;
+            state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
+            state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
+            state.flags.parity = parity(result, 8);
+
+            state.regs.a = result as u8;
+        }
+
+        pub fn ora(state: &mut Intel8080, byte: u8) {
+            let result = (state.regs.a as u16) | (byte as u16);
+
+            state.flags.carry = (result > 0xff) as u8;
+            state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
+            state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
+            state.flags.parity = parity(result, 8);
+
+            state.regs.a = result as u8;
+        }
+
+        pub fn cmp(state: &mut Intel8080, byte: u8) {
+            let result = (state.regs.a as u16) - (byte as u16);
+
+            state.flags.carry = (result > 0xff) as u8;
+            state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
+            state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
+            state.flags.parity = parity(result, 8);
+
+            state.regs.a = result as u8;
+        }
     }
 
     pub struct ConditionFlags {
@@ -827,414 +871,66 @@ pub mod intel8080 {
                     }
                     0x9F => { sbb(self, self.regs.a); self.pc += 1; }
 
+
+                    0xA0 => { ana(self, self.regs.b); self.pc += 1; }
+                    0xA1 => { ana(self, self.regs.c); self.pc += 1; }
+                    0xA2 => { ana(self, self.regs.d); self.pc += 1; }
+                    0xA3 => { ana(self, self.regs.e); self.pc += 1; }
+                    0xA4 => { ana(self, self.regs.h); self.pc += 1; }
+                    0xA5 => { ana(self, self.regs.l); self.pc += 1; }
+                    0xA6 => {
+                        // INSTRUCTION: ANA M
+                        let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                        ana(self, self.memory[addr]);
+
+                        self.pc += 1;
+                    }
+                    0xA7 => { ana(self, self.regs.l); self.pc += 1; }
+                    0xA8 => { xra(self, self.regs.b); self.pc += 1; }
+                    0xA9 => { xra(self, self.regs.c); self.pc += 1; }
+                    0xAA => { xra(self, self.regs.d); self.pc += 1; }
+                    0xAB => { xra(self, self.regs.e); self.pc += 1; }
+                    0xAC => { xra(self, self.regs.h); self.pc += 1; }
+                    0xAD => { xra(self, self.regs.l); self.pc += 1; }
+                    0xAE => {
+                        // INSTRUCTION: XRA M
+                        let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                        xra(self, self.memory[addr]);
+
+                        self.pc += 1;
+                    }
+                    0xAF => { xra(self, self.regs.l); self.pc += 1; }
+
+                    0xB0 => { ora(self, self.regs.b); self.pc += 1; }
+                    0xB1 => { ora(self, self.regs.c); self.pc += 1; }
+                    0xB2 => { ora(self, self.regs.d); self.pc += 1; }
+                    0xB3 => { ora(self, self.regs.e); self.pc += 1; }
+                    0xB4 => { ora(self, self.regs.h); self.pc += 1; }
+                    0xB5 => { ora(self, self.regs.l); self.pc += 1; }
+                    0xB6 => {
+                        // INSTRUCTION: ORA C
+                        let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                        ora(self, self.memory[addr]);
+
+                        self.pc += 1;
+                    }
+                    0xB7 => { ora(self, self.regs.a); self.pc += 1; }
+                    0xB8 => { cmp(self, self.regs.b); self.pc += 1; }
+                    0xB9 => { cmp(self, self.regs.c); self.pc += 1; }
+                    0xBA => { cmp(self, self.regs.d); self.pc += 1; }
+                    0xBB => { cmp(self, self.regs.e); self.pc += 1; }
+                    0xBC => { cmp(self, self.regs.h); self.pc += 1; }
+                    0xBD => { cmp(self, self.regs.l); self.pc += 1; }
+                    0xBE => {
+                        // INSTRUCTION: CMP M
+                        let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                        cmp(self, self.memory[addr]);
+
+                        self.pc += 1;
+                    }
+                    0xBF => { cmp(self, self.regs.l); self.pc += 1; }
+
                     _ => {}
-
-                    // 0xA0 => {
-                    //     // INSTRUCTION: ANA B
-                    //     let result = (self.regs.a as u16) & (self.regs.b as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xA1 => {
-                    //     // INSTRUCTION: ANA C
-                    //     let result = (self.regs.a as u16) & (self.regs.c as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xA2 => {
-                    //     // INSTRUCTION: ANA D
-                    //     let result = (self.regs.a as u16) & (self.regs.d as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xA3 => {
-                    //     // INSTRUCTION: ANA E
-                    //     let result = (self.regs.a as u16) & (self.regs.e as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xA4 => {
-                    //     // INSTRUCTION: ANA H
-                    //     let result = (self.regs.a as u16) & (self.regs.h as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xA5 => {
-                    //     // INSTRUCTION: ANA L
-                    //     let result = (self.regs.a as u16) & (self.regs.l as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xA6 => {
-                    //     // INSTRUCTION: ANA M
-                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
-                    //     let result = (self.regs.a as u16) & (self.memory[addr] as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xA7 => {
-                    //     // INSTRUCTION: ANA A
-                    //     let result = self.regs.a as u16;
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xA8 => {
-                    //     // INSTRUCTION: XRA B
-                    //     let result = (self.regs.a as u16) ^ (self.regs.b as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //     self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xA9 => {
-                    //     // INSTRUCTION: XRA C
-                    //     let result = (self.regs.a as u16) ^ (self.regs.c as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xAA => {
-                    //     // INSTRUCTION: XRA D
-                    //     let result = (self.regs.a as u16) ^ (self.regs.d as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xAB => {
-                    //     // INSTRUCTION: XRA E
-                    //     let result = (self.regs.a as u16) ^ (self.regs.e as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xAC => {
-                    //     // INSTRUCTION: XRA H
-                    //     let result = (self.regs.a as u16) ^ (self.regs.h as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xAD => {
-                    //     // INSTRUCTION: XRA L
-                    //     let result = (self.regs.a as u16) ^ (self.regs.l as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xAE => {
-                    //     // INSTRUCTION: XRA M
-                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
-                    //     let result = (self.regs.a as u16) ^ (self.memory[addr] as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xAF => {
-                    //     // INSTRUCTION: XRA A
-                    //     let result = (self.regs.a as u16) ^ (self.regs.a as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-
-
-                    // 0xB0 => {
-                    //     // INSTRUCTION: ORA B
-                    //     let result = (self.regs.a as u16) | (self.regs.b as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xB1 => {
-                    //     // INSTRUCTION: ORA C
-                    //     let result = (self.regs.a as u16) | (self.regs.c as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xB2 => {
-                    //     // INSTRUCTION: ORA D
-                    //     let result = (self.regs.a as u16) | (self.regs.d as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xB3 => {
-                    //     // INSTRUCTION: ORA E
-                    //     let result = (self.regs.a as u16) | (self.regs.e as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xB4 => {
-                    //     // INSTRUCTION: ORA H
-                    //     let result = (self.regs.a as u16) | (self.regs.h as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xB5 => {
-                    //     // INSTRUCTION: ORA L
-                    //     let result = (self.regs.a as u16) | (self.regs.l as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xB6 => {
-                    //     // INSTRUCTION: ORA C
-                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
-                    //     let result = (self.regs.a as u16) | (self.memory[addr] as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xB7 => {
-                    //     // INSTRUCTION: ORA A
-                    //     let result = (self.regs.a as u16) | (self.regs.a as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.regs.a = result as u8;
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xB8 => {
-                    //     // INSTRUCTION: CMP B
-                    //     let result = (self.regs.a as u16) - (self.regs.b as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xB9 => {
-                    //     // INSTRUCTION: CMP C
-                    //     let result = (self.regs.a as u16) - (self.regs.c as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xBA => {
-                    //     // INSTRUCTION: CMP D
-                    //     let result = (self.regs.a as u16) - (self.regs.d as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xBB => {
-                    //     // INSTRUCTION: CMP E
-                    //     let result = (self.regs.a as u16) - (self.regs.e as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xBC => {
-                    //     // INSTRUCTION: CMP H
-                    //     let result = (self.regs.a as u16) - (self.regs.h as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xBD => {
-                    //     // INSTRUCTION: CMP L
-                    //     let result = (self.regs.a as u16) - (self.regs.l as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xBE => {
-                    //     // INSTRUCTION: CMP M
-                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
-                    //     let result = (self.regs.a as u16) - (self.memory[addr] as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.pc += 1;
-                    // }
-                    // 0xBF => {
-                    //     // INSTRUCTION: CMP A
-                    //     let result = (self.regs.a as u16) - (self.regs.a as u16);
-
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
-
-                    //     self.pc += 1;
-                    // }
 
 
                     // 0xC0 => {
