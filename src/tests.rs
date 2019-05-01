@@ -371,3 +371,23 @@ fn emulate_sta() {
 
     assert_eq!(machine.memory[4], machine.regs.a);
 }
+
+#[test]
+fn emulate_add() {
+    let mut machine = Intel8080::new();
+    machine.regs.a = 0x6c;
+    machine.regs.b = 0x2e;
+
+    machine.memory = vec![
+        0x80,
+        0x76
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.regs.a, 0x9a);
+    assert_eq!(machine.flags.sign, 1);
+    assert_eq!(machine.flags.zero, 0);
+    assert_eq!(machine.flags.parity, 1);
+    assert_eq!(machine.flags.carry, 0);
+}
