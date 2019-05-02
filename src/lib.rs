@@ -1147,519 +1147,410 @@ pub mod intel8080 {
                     }
                     0xCF => { rst(self, 1); }
 
-                    _ => {}
 
+                    0xD0 => {
+                        // INSTRUCTION: RNC
+                        if self.flags.carry == 0 {
+                            let lsb = self.memory[self.sp];
+                            let msb = self.memory[self.sp + 1];
 
-                    // 0xD0 => {
-                    //     // INSTRUCTION: RNC
-                    //     if self.flags.carry == 0 {
-                    //         let lsb = self.memory[self.sp];
-                    //         let msb = self.memory[self.sp + 1];
+                            let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
+                            self.pc = addr;
+                            self.sp += 2;
+                        } else {
+                            self.pc += 1;
+                        }
+                    }
+                    0xD1 => { pop(self, 'D'); self.pc += 1; }
+                    0xD2 => {
+                        // INSTRUCTION: JNC
+                        if self.flags.carry == 0 {
+                            let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                                        (self.memory[self.pc + 1] as u16)) as usize;
 
-                    //         let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
-                    //         self.pc = addr;
-                    //         self.sp += 2;
-                    //     } else {
-                    //         self.pc += 1;
-                    //     }
-                    // }
-                    // 0xD1 => { pop(self, 'D'); self.pc += 1; }
-                    // 0xD2 => {
-                    //     // INSTRUCTION: JNC
-                    //     if self.flags.carry == 0 {
-                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
-                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+                            self.pc = addr;
+                        } else {
+                            self.pc += 1;
+                        }
+                    }
+                    0xD3 => {
+                        // INSTRUCTION: OUT
+                        self.pc += 1;
+                    }
+                    0xD4 => {
+                        // INSTRUCTION: CNC
+                        if self.flags.carry == 0 {
+                            let msb = ((self.pc & 0xff00) >> 8) as u8;
+                            let lsb = (self.pc & 0x00ff) as u8;
 
-                    //         self.pc = addr;
-                    //     } else {
-                    //         self.pc += 1;
-                    //     }
-                    // }
-                    // 0xD3 => {
-                    //     // INSTRUCTION: OUT
-                    //     self.pc += 1;
-                    // }
-                    // 0xD4 => {
-                    //     // INSTRUCTION: CNC
-                    //     if self.flags.carry == 0 {
-                    //         let msb = ((self.pc & 0xff00) >> 8) as u8;
-                    //         let lsb = (self.pc & 0x00ff) as u8;
+                            self.memory[self.sp - 1] = msb; 
+                            self.memory[self.sp - 2] = lsb;
 
-                    //         self.memory[self.sp] = lsb; self.sp += 1;
-                    //         self.memory[self.sp] = msb; self.sp += 1;
+                            let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                                        (self.memory[self.pc + 1] as u16)) as usize;
 
-                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
-                    //                     (self.memory[self.pc + 1] as u16)) as usize;
-
-                    //         self.pc = addr
-
-                    //     } else {
-                    //         self.pc += 1;
-                    //     }
-                    // }
-                    // 0xD5 => { push(self, 'D'); self.pc += 1; }
-                    // 0xD6 => {
-                    //     // INSTRUCTION: SUI
-                    //     let result = (self.regs.a as u16) - (self.memory[self.pc + 1] as u16);
+                            self.pc = addr;
+                            self.sp -= 2;
+                        } else {
+                            self.pc += 1;
+                        }
+                    }
+                    0xD5 => { push(self, 'D'); self.pc += 1; }
+                    0xD6 => {
+                        // INSTRUCTION: SUI
+                        let result = (self.regs.a as u16) - (self.memory[self.pc + 1] as u16);
                         
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = (((result as u8) & 0xff) == 0) as u8;
+                        self.flags.sign = (((result as u8) & 0x80) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
 
-                    //     self.regs.a = result as u8;
-                    //     self.pc += 2;
-                    // }
-                    // 0xD7 => {
-                    //      // INSTRUCTION: RST 2
-                    //     let msb = ((self.pc & 0xff00) >> 8) as u8;
-                    //     let lsb = (self.pc & 0x00ff) as u8;
+                        self.regs.a = result as u8;
+                        self.pc += 2;
+                    }
+                    0xD7 => { rst(self, 2); }
+                    0xD8 => {
+                        // INSTRUCTION: RC
+                        if self.flags.carry == 1 {
+                            let lsb = self.memory[self.sp];
+                            let msb = self.memory[self.sp + 1];
 
-                    //     self.memory[self.sp] = lsb; self.sp += 1;
-                    //     self.memory[self.sp] = msb; self.sp += 1;
+                            let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
+                            self.pc = addr;
+                            self.sp += 2;
+                        } else { self.pc += 1; }
+                    }
+                    0xD9 => { self.pc += 1; }
+                    0xDA => {
+                        // INSTRUCTION: JC
+                        if self.flags.carry == 1 {
+                            let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                                        (self.memory[self.pc + 1] as u16)) as usize;
 
-                    //     self.pc = (2_u8 << 3) as usize;
-                    // }
-                    // 0xD8 => {
-                    //     // INSTRUCTION: RC
-                    //     if self.flags.zero == 1 {
-                    //         let lsb = self.memory[self.sp];
-                    //         let msb = self.memory[self.sp + 1];
+                            self.pc = addr;
+                        } else {
+                            self.pc += 1;
+                        }
+                    }
+                    0xDB => { self.pc += 1; }
+                    0xDC => {
+                        // INSTRUCTION: CC
+                        if self.flags.carry == 1 {
+                            let msb = ((self.pc & 0xff00) >> 8) as u8;
+                            let lsb = (self.pc & 0x00ff) as u8;
 
-                    //         let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
-                    //         self.pc = addr;
-                    //         self.sp += 2;
-                    //     } else {
-                    //         self.pc += 1;
-                    //     }
-                    // }
-                    // 0xD9 => {
-                    //     // INSTRUCTION: NOP
-                    //     self.pc += 1;
-                    // }
-                    // 0xDA => {
-                    //     // INSTRUCTION: JC
-                    //     if self.flags.carry == 1 {
-                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
-                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+                            self.memory[self.sp - 1] = msb; 
+                            self.memory[self.sp - 2] = lsb;
 
-                    //         self.pc = addr;
-                    //     } else {
-                    //         self.pc += 1;
-                    //     }
-                    // }
-                    // 0xDB => {
-                    //     // INSTRUCTION: IN
-                    //     self.pc += 1;
-                    // }
-                    // 0xDC => {
-                    //     // INSTRUCTION: CC
-                    //     if self.flags.carry == 1 {
-                    //         let msb = ((self.pc & 0xff00) >> 8) as u8;
-                    //         let lsb = (self.pc & 0x00ff) as u8;
+                            let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                                        (self.memory[self.pc + 1] as u16)) as usize;
 
-                    //         self.memory[self.sp] = lsb; self.sp += 1;
-                    //         self.memory[self.sp] = msb; self.sp += 1;
-
-                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
-                    //                     (self.memory[self.pc + 1] as u16)) as usize;
-
-                    //         self.pc = addr
-                    //     } else {
-                    //         self.pc += 1;
-                    //     }
-                    // }
-                    // 0xDD => {
-                    //     // INSTRUCTION: NOP
-                    //     self.pc += 1;
-                    // }
-                    // 0xDE => {
-                    //     // INSTRUCTION: SBI
-                    //     let result = (self.regs.a as u16) + (self.memory[self.pc + 1] as u16 + 
-                    //                                          self.flags.carry as u16);
+                            self.pc = addr;
+                            self.sp -= 2;
+                        } else {
+                            self.pc += 1;
+                        }
+                    }
+                    0xDD => { self.pc += 1; }
+                    0xDE => {
+                        // INSTRUCTION: SBI
+                        let result = (self.regs.a as u16) - (self.memory[self.pc + 1] as u16 + 
+                                                             self.flags.carry as u16);
                         
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //      self.flags.parity = parity(result, 16);
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = (((result as u8) & 0xff) == 0) as u8;
+                        self.flags.sign = (((result as u8) & 0x80) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
 
-                    //     self.regs.a = result as u8;
-                    //     self.pc += 2;
-                    // }
-                    // 0xDF => {
-                    //      // INSTRUCTION: RST 3
-                    //     let msb = ((self.pc & 0xff00) >> 8) as u8;
-                    //     let lsb = (self.pc & 0x00ff) as u8;
-
-                    //     self.memory[self.sp] = lsb; self.sp += 1;
-                    //     self.memory[self.sp] = msb; self.sp += 1;
-
-                    //     self.pc = (3_u8 << 3) as usize;
-                    // }
+                        self.regs.a = result as u8;
+                        self.pc += 2;
+                    }
+                    0xDF => { rst(self, 3); }
 
 
-                    // 0xE0 => {
-                    //     // INSTRUCTION: RPO
-                    //     if self.flags.parity == 0 {
-                    //         let lsb = self.memory[self.sp];
-                    //         let msb = self.memory[self.sp + 1];
+                    0xE0 => {
+                        // INSTRUCTION: RPO
+                        if self.flags.parity == 0 {
+                            let lsb = self.memory[self.sp];
+                            let msb = self.memory[self.sp + 1];
 
-                    //         let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
-                    //         self.pc = addr;
-                    //         self.sp += 2;
-                    //     } else {
-                    //         self.pc += 1;
-                    //     }
-                    // }
-                    // 0xE1 => { pop(self, 'H'); self.pc += 1; }
-                    // 0xE2 => {
-                    //     // INSTRUCTION: JPO
-                    //     if self.flags.parity == 0 {
-                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
-                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+                            let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
+                            self.pc = addr;
+                            self.sp += 2;
+                        } else {
+                            self.pc += 1;
+                        }
+                    }
+                    0xE1 => { pop(self, 'H'); self.pc += 1; }
+                    0xE2 => {
+                        // INSTRUCTION: JPO
+                        if self.flags.parity == 0 {
+                            let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                                        (self.memory[self.pc + 1] as u16)) as usize;
 
-                    //         self.pc = addr;
-                    //     } else {
-                    //         self.pc += 1;
-                    //     }
-                    // }
-                    // 0xE3 => {
-                    //     // INSTRUCTION: XTHL
-                    //     let lsb = self.memory[self.sp];
-                    //     let msb = self.memory[self.sp + 1];
+                            self.pc = addr;
+                        } else {
+                            self.pc += 1;
+                        }
+                    }
+                    0xE3 => {
+                        // INSTRUCTION: XTHL
+                        let lsb = self.memory[self.sp];
+                        let msb = self.memory[self.sp + 1];
+                        self.sp += 2;
 
-                    //     self.memory[self.sp] = self.regs.l;
-                    //     self.memory[self.sp + 1] = self.regs.h;
+                        self.memory[self.sp - 1] = self.regs.l;
+                        self.memory[self.sp - 2] = self.regs.h;
+                        self.sp -= 2;
 
-                    //     self.regs.l = lsb;
-                    //     self.regs.h = msb;
+                        self.regs.l = lsb;
+                        self.regs.h = msb;
 
-                    //     self.pc += 1;
-                    // }
-                    // 0xE4 => {
-                    //     // INSTRUCTION: CPO
-                    //     if self.flags.parity == 0 {
-                    //         let msb = ((self.pc & 0xff00) >> 8) as u8;
-                    //         let lsb = (self.pc & 0x00ff) as u8;
+                        self.pc += 1;
+                    }
+                    0xE4 => {
+                        // INSTRUCTION: CPO
+                        if self.flags.parity == 0 {
+                            self.pc += 1; // Next instruction to be executed
+                            let msb = ((self.pc & 0xff00) >> 8) as u8;
+                            let lsb = (self.pc & 0x00ff) as u8;
 
-                    //         self.memory[self.sp] = lsb; self.sp += 1;
-                    //         self.memory[self.sp] = msb; self.sp += 1;
+                            self.memory[self.sp - 1] = lsb; 
+                            self.memory[self.sp - 2] = msb;
 
-                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
-                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+                            let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                                        (self.memory[self.pc + 1] as u16)) as usize;
 
-                    //         self.pc = addr
-
-                    //     } else {
-                    //         self.pc += 1;
-                    //     }
-                    // }
-                    // 0xE5 => { push(self, 'H'); self.pc += 1; }
-                    // 0xE6 => {
-                    //     // INSTRUCTION: ANI
-                    //     let result = (self.regs.a as u16) & (self.memory[self.pc + 1] as u16);
+                            self.pc = addr;
+                            self.sp -= 2;
+                        } else {
+                            self.pc += 1;
+                        }
+                    }
+                    0xE5 => { push(self, 'H'); self.pc += 1; }
+                    0xE6 => {
+                        // INSTRUCTION: ANI
+                        let result = (self.regs.a as u16) & (self.memory[self.pc + 1] as u16);
                         
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = (((result as u8) & 0xff) == 0) as u8;
+                        self.flags.sign = (((result as u8) & 0x80) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
 
-                    //     self.regs.a = result as u8;
-                    //     self.pc += 2;
-                    // }
-                    // 0xE7 => {
-                    //      // INSTRUCTION: RST 4
-                    //     let msb = ((self.pc & 0xff00) >> 8) as u8;
-                    //     let lsb = (self.pc & 0x00ff) as u8;
+                        self.regs.a = result as u8;
+                        self.pc += 2;
+                    }
+                    0xE7 => { rst(self, 4); }
+                    0xE8 => {
+                        // INSTRUCTION: RPE
+                        if self.flags.parity == 1 {
+                            let lsb = self.memory[self.sp];
+                            let msb = self.memory[self.sp + 1];
 
-                    //     self.memory[self.sp] = lsb; self.sp += 1;
-                    //     self.memory[self.sp] = msb; self.sp += 1;
+                            let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
+                            self.pc = addr;
+                            self.sp += 2;
+                        } else {
+                            self.pc += 1;
+                        }
+                    }
+                    0xE9 => {
+                        // INSTRUCTION: PCHL
+                        let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                        self.pc = addr;
+                    }
+                    0xEA => {
+                        // INSTRUCTION: JPE
+                        if self.flags.parity == 1 {
+                            let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                                        (self.memory[self.pc + 1] as u16)) as usize;
 
-                    //     self.pc = (4_u8 << 3) as usize;
-                    // }
-                    // 0xE8 => {
-                    //     // INSTRUCTION: RPE
-                    //     if self.flags.parity == 1 {
-                    //         let lsb = self.memory[self.sp];
-                    //         let msb = self.memory[self.sp + 1];
+                            self.pc = addr;
+                        } else {
+                            self.pc += 1;
+                        }
+                    }
+                    0xEB => {
+                        // INSTRUCTION: XCHG
+                        let (d, e) = (self.regs.d, self.regs.d);
 
-                    //         let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
-                    //         self.pc = addr;
-                    //         self.sp += 2;
-                    //     } else {
-                    //         self.pc += 1;
-                    //     }
-                    // }
-                    // 0xE9 => {
-                    //     // INSTRUCTION: PCHL
-                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
-                    //     self.pc = addr;
-                    // }
-                    // 0xEA => {
-                    //     // INSTRUCTION: JPE
-                    //     if self.flags.parity == 1 {
-                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
-                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+                        self.regs.d = self.regs.h;
+                        self.regs.e = self.regs.l;
 
-                    //         self.pc = addr;
-                    //     } else {
-                    //         self.pc += 1;
-                    //     }
-                    // }
-                    // 0xEB => {
-                    //     // INSTRUCTION: XCHG
-                    //     let (d, e) = (self.regs.d, self.regs.d);
+                        self.regs.h = d;
+                        self.regs.l = e;
 
-                    //     self.regs.d = self.regs.h;
-                    //     self.regs.e = self.regs.l;
+                        self.pc += 1;
+                    }
+                    0xEC => {
+                        // INSTRUCTION: CPE
+                        if self.flags.parity == 1 {
+                            self.pc += 1; // Next instruction to be executed
+                            let msb = ((self.pc & 0xff00) >> 8) as u8;
+                            let lsb = (self.pc & 0x00ff) as u8;
 
-                    //     self.regs.h = d;
-                    //     self.regs.l = e;
+                            self.memory[self.sp - 1] = lsb; 
+                            self.memory[self.sp - 2] = msb;
 
-                    //     self.pc += 1;
-                    // }
-                    // 0xEC => {
-                    //     // INSTRUCTION: CPE
-                    //     if self.flags.parity == 1 {
-                    //         let msb = ((self.pc & 0xff00) >> 8) as u8;
-                    //         let lsb = (self.pc & 0x00ff) as u8;
+                            let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                                        (self.memory[self.pc + 1] as u16)) as usize;
 
-                    //         self.memory[self.sp] = lsb; self.sp += 1;
-                    //         self.memory[self.sp] = msb; self.sp += 1;
-
-                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
-                    //                     (self.memory[self.pc + 1] as u16)) as usize;
-
-                    //         self.pc = addr
-
-                    //     } else {
-                    //         self.pc += 1;
-                    //     }
-                    // }
-                    // 0xED => {
-                    //     // INSTRUCTION: NOP
-                    //     self.pc += 1;
-                    // }
-                    // 0xEE => {
-                    //     // INSTRUCTION: XRI
-                    //     let result = (self.regs.a as u16) ^ (self.memory[self.pc + 1] as u16);
+                            self.pc = addr;
+                            self.sp -= 2;
+                        } else {
+                            self.pc += 1;
+                        }
+                    }
+                    0xED => { self.pc += 1; }
+                    0xEE => {
+                        // INSTRUCTION: XRI
+                        let result = (self.regs.a as u16) ^ (self.memory[self.pc + 1] as u16);
                         
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = (((result as u8) & 0xff) == 0) as u8;
+                        self.flags.sign = (((result as u8) & 0x80) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
 
-                    //     self.regs.a = result as u8;
-                    //     self.pc += 2;
-                    // }
-                    // 0xEF => {
-                    //      // INSTRUCTION: RST 5
-                    //     let msb = ((self.pc & 0xff00) >> 8) as u8;
-                    //     let lsb = (self.pc & 0x00ff) as u8;
-
-                    //     self.memory[self.sp] = lsb; self.sp += 1;
-                    //     self.memory[self.sp] = msb; self.sp += 1;
-
-                    //     self.pc = (5_u8 << 3) as usize;
-                    // }
+                        self.regs.a = result as u8;
+                        self.pc += 2;
+                    }
+                    0xEF => { rst(self, 5); }
 
 
-                    // 0xF0 => {
-                    //     if self.flags.sign == 0 {
-                    //         let lsb = self.memory[self.sp];
-                    //         let msb = self.memory[self.sp + 1];
+                    0xF0 => {
+                        if self.flags.sign == 0 {
+                            let lsb = self.memory[self.sp];
+                            let msb = self.memory[self.sp + 1];
 
-                    //         let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
-                    //         self.pc = addr;
-                    //         self.sp += 2;
-                    //     } else {
-                    //         self.pc += 1;
-                    //     }
-                    // }
-                    // 0xF1 => { pop(self, 'P'); self.pc += 1; };
+                            let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
+                            self.pc = addr;
+                            self.sp += 2;
+                        } else {
+                            self.pc += 1;
+                        }
+                    }
+                    0xF1 => { pop(self, 'P'); self.pc += 1; }
+                    0xF2 => {
+                        // INSTRUCTION: JP
+                        if self.flags.sign == 1 {
+                            let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                                        (self.memory[self.pc + 1] as u16)) as usize;
 
-                    //     self.sp += 2;
+                            self.pc = addr;
+                        } else {
+                            self.pc += 1;
+                        }
+                    }
+                    0xF3 => {
+                        // INSTRUCTION: DI
 
-                    //     self.pc += 1;
-                    // }
-                    // 0xF2 => {
-                    //     // INSTRUCTION: JP
-                    //     if self.flags.sign == 1 {
-                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
-                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+                        // disable interrupts
+                        self.int_enable = 0;
+                        self.pc += 1;
+                    }
+                    0xF4 => {
+                        // INSTRUCTION: CP
+                        if self.flags.sign == 0 {
+                            let msb = ((self.pc & 0xff00) >> 8) as u8;
+                            let lsb = (self.pc & 0x00ff) as u8;
 
-                    //         self.pc = addr;
-                    //     } else {
-                    //         self.pc += 1;
-                    //     }
-                    // }
-                    // 0xF3 => {
-                    //     // INSTRUCTION: DI
+                            self.memory[self.sp - 1] = lsb;
+                            self.memory[self.sp - 2] = msb;
 
-                    //     // disable interrupts
-                    //     self.int_enable = 0;
-                    //     self.pc += 1;
-                    // }
-                    // 0xF4 => {
-                    //     // INSTRUCTION: CP
-                    //     if self.flags.sign == 0 {
-                    //         let msb = ((self.pc & 0xff00) >> 8) as u8;
-                    //         let lsb = (self.pc & 0x00ff) as u8;
+                            let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                                        (self.memory[self.pc + 1] as u16)) as usize;
 
-                    //         self.memory[self.sp] = lsb; self.sp += 1;
-                    //         self.memory[self.sp] = msb; self.sp += 1;
-
-                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
-                    //                     (self.memory[self.pc + 1] as u16)) as usize;
-
-                    //         self.pc = addr
-
-                    //     } else {
-                    //         self.pc += 1;
-                    //     }
-                    // }   
-                    // 0xF5 => { push(self, 'P'); self.pc += 1; }
-                    // 0xF6 => {
-                    //     // INSTRUCTION: ORI
-                    //     let result = (self.regs.a as u16) | (self.memory[self.pc + 1] as u16);
+                            self.pc = addr;
+                            self.sp += 2;
+                        } else {
+                            self.pc += 1;
+                        }
+                    }   
+                    0xF5 => { push(self, 'P'); self.pc += 1; }
+                    0xF6 => {
+                        // INSTRUCTION: ORI
+                        let result = (self.regs.a as u16) | (self.memory[self.pc + 1] as u16);
                         
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = (((result as u8) & 0xff) == 0) as u8;
+                        self.flags.sign = (((result as u8) & 0x80) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
 
-                    //     self.regs.a = result as u8;
-                    //     self.pc += 2;
-                    // }
-                    // 0xF7 => {
-                    //      // INSTRUCTION: RST 6
-                    //     let msb = ((self.pc & 0xff00) >> 8) as u8;
-                    //     let lsb = (self.pc & 0x00ff) as u8;
+                        self.regs.a = result as u8;
+                        self.pc += 2;
+                    }
+                    0xF7 => { rst(self, 6); }
+                    0xF8 => {
+                        // INSTRUCTION: RM
+                        if self.flags.sign == 1 {
+                            let lsb = self.memory[self.sp];
+                            let msb = self.memory[self.sp + 1];
 
-                    //     self.memory[self.sp] = lsb; self.sp += 1;
-                    //     self.memory[self.sp] = msb; self.sp += 1;
+                            let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
+                            self.pc = addr;
+                            self.sp += 2;
+                        } else {
+                            self.pc += 1;
+                        }
+                    }
+                    0xF9 => {
+                        // INSTRUCTION: SPHL
+                        let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
+                        self.sp = addr;
 
-                    //     self.pc = (6_u8 << 3) as usize;
-                    // }
-                    // 0xF8 => {
-                    //     // INSTRUCTION: RM
-                    //     if self.flags.sign == 1 {
-                    //         let lsb = self.memory[self.sp];
-                    //         let msb = self.memory[self.sp + 1];
+                        self.pc += 1;
+                    }
+                    0xFA => {
+                        // INSTRUCTION: JM
+                        if self.flags.sign == 1 {
+                            let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                                        (self.memory[self.pc + 1] as u16)) as usize;
 
-                    //         let addr = (((msb as u16) << 8) | (lsb as u16)) as usize;
-                    //         self.pc = addr;
-                    //         self.sp += 2;
-                    //     } else {
-                    //         self.pc += 1;
-                    //     }
-                    // }
-                    // 0xF9 => {
-                    //     // INSTRUCTION: SPHL
-                    //     let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
-                    //     self.sp = addr;
+                            self.pc = addr;
+                        } else {
+                            self.pc += 1;
+                        }
+                    }
+                    0xFB => {
+                        // INSTRUCTION: EI
 
-                    //     self.pc += 1;
-                    // }
-                    // 0xFA => {
-                    //     // INSTRUCTION: JM
-                    //     if self.flags.sign == 1 {
-                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
-                    //                     (self.memory[self.pc + 1] as u16)) as usize;
+                        // enable interrupts
+                        self.int_enable = 1;
 
-                    //         self.pc = addr;
-                    //     } else {
-                    //         self.pc += 1;
-                    //     }
-                    // }
-                    // 0xFB => {
-                    //     // INSTRUCTION: EI
+                        self.pc += 1;
+                    }
+                    0xFC => {
+                        // INSTRUCTION: CM
+                        if self.flags.sign == 1 {
+                            let msb = ((self.pc & 0xff00) >> 8) as u8;
+                            let lsb = (self.pc & 0x00ff) as u8;
 
-                    //     // enable interrupts
-                    //     self.int_enable = 1;
+                            self.memory[self.sp - 1] = lsb;
+                            self.memory[self.sp - 2] = msb;
 
-                    //     self.pc += 1;
-                    // }
-                    // 0xFC => {
-                    //     // INSTRUCTION: CM
-                    //     if self.flags.sign == 1 {
-                    //         let msb = ((self.pc & 0xff00) >> 8) as u8;
-                    //         let lsb = (self.pc & 0x00ff) as u8;
+                            let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
+                                        (self.memory[self.pc + 1] as u16)) as usize;
 
-                    //         self.memory[self.sp] = lsb; self.sp += 1;
-                    //         self.memory[self.sp] = msb; self.sp += 1;
-
-                    //         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
-                    //                     (self.memory[self.pc + 1] as u16)) as usize;
-
-                    //         self.pc = addr
-
-                    //     } else {
-                    //         self.pc += 1;
-                    //     }
-                    // }
-                    // 0xFD => {
-                    //     // INSTRUCTION: NOP
-                    //     self.pc += 1;
-                    // }
-                    // 0xFE => {
-                    //     // INSTRUCTION: CPI
-                    //     let result = (self.regs.a as u16) - (self.memory[self.pc + 1] as u16);
+                            self.pc = addr;
+                            self.sp += 2;
+                        } else {
+                            self.pc += 1;
+                        }
+                    }
+                    0xFD => { self.pc += 1; }
+                    0xFE => {
+                        // INSTRUCTION: CPI
+                        let result = (self.regs.a as u16) - (self.memory[self.pc + 1] as u16);
                         
-                    //     self.flags.carry = (result > 0xff) as u8;
-                    //     self.flags.zero = ((result & 0xffff) == 0) as u8;
-                    //     self.flags.sign = ((result & 0x8000) != 0) as u8;
-                    //     self.flags.parity = {
-                    //         let mut counter = 0;
-                    //         let mut r = result;
-                    //         for _ in 0..16 {
-                    //             if (r & 0x01) == 1 { counter += 1; }
-                    //             r >>= 1;
-                    //         }
-                            
-                    //         ((counter & 0x01) == 0) as u8
-                    //     };
+                        self.flags.carry = (result > 0xff) as u8;
+                        self.flags.zero = (((result as u8) & 0xff) == 0) as u8;
+                        self.flags.sign = (((result as u8) & 0x80) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
 
-                    //     self.regs.a = result as u8;
-                    //     self.pc += 2;
-                    // }
-                    // 0xFF => {
-                    //      // INSTRUCTION: RST 7
-                    //     let msb = ((self.pc & 0xff00) >> 8) as u8;
-                    //     let lsb = (self.pc & 0x00ff) as u8;
-
-                    //     self.memory[self.sp] = lsb; self.sp += 1;
-                    //     self.memory[self.sp] = msb; self.sp += 1;
-
-                    //     self.pc = (7_u8 << 3) as usize;
-                    // }
+                        self.regs.a = result as u8;
+                        self.pc += 2;
+                    }
+                    0xFF => { rst(self, 7); }
                 }
             }
         }
