@@ -551,3 +551,77 @@ fn emulate_cmp() {
     assert_eq!(machine.flags.parity, 1);
     assert_eq!(machine.flags.carry, 0);
 }
+
+#[test]
+fn emulate_pop() {
+    let mut machine = Intel8080::new();
+    machine.sp = 0x05;
+
+    machine.memory = vec![
+        0xc1,
+        0x76,
+        0, 0, 0, 0xae, 0x2b 
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.regs.c, 0xae);
+    assert_eq!(machine.regs.b, 0x2b);
+    assert_eq!(machine.sp, 0x07);
+}
+
+#[test]
+fn emulate_rnz() {
+    let mut machine = Intel8080::new();
+    machine.flags.zero = 0;
+    machine.sp = 0x05;
+
+    machine.memory = vec![
+        0xc0,
+        0, 0, 0, 
+        0x76, 0x04, 0x00, 0
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.pc, 0x04);
+    assert_eq!(machine.sp, 0x07);
+}
+
+#[test]
+fn emulate_jnz() {
+    let mut machine = Intel8080::new();
+    machine.flags.zero = 0;
+    machine.sp = 0x05;
+
+    machine.memory = vec![
+        0xc2,
+        0x04, 0x00, 0, 
+        0x76, 0x04, 0x00, 0
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.pc, 0x04);
+}
+
+#[test]
+fn emulate_cnz() {
+    let mut machine = Intel8080::new();
+    machine.flags.zero = 0;
+    machine.sp = 0x09;
+
+    machine.memory = vec![
+        0, 0, 0, 0, 0,
+        0xc4,
+        0x08, 0x00, 0x76, 
+        0, 0, 0, 0
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.pc, 0x08);
+    assert_eq!(machine.memory[9], 0x05);
+    assert_eq!(machine.memory[10], 0x00);
+    assert_eq!(machine.sp, 0x0b);
+}
