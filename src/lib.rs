@@ -451,6 +451,7 @@ pub mod cpu {
         }
 
         pub fn rst(state: &mut Intel8080, code: u8) {
+            state.pc += 1; // Address of the next instruction
             let msb = ((state.pc & 0xff00) >> 8) as u8;
             let lsb = (state.pc & 0x00ff) as u8;
             
@@ -1040,6 +1041,7 @@ pub mod intel8080 {
                     0xC4 => {
                         // INSTRUCTION: CNZ
                         if self.flags.zero == 0 {
+                            self.pc += 3; // Address of the next instruction
                             let msb = ((self.pc & 0xff00) >> 8) as u8;
                             let lsb = (self.pc & 0x00ff) as u8;
 
@@ -1105,6 +1107,7 @@ pub mod intel8080 {
                     0xCC => {
                         // INSTRUCTION: CZ
                         if self.flags.zero == 1 {
+                            self.pc += 3; // Address of the next instruction
                             let msb = ((self.pc & 0xff00) >> 8) as u8;
                             let lsb = (self.pc & 0x00ff) as u8;
 
@@ -1120,6 +1123,7 @@ pub mod intel8080 {
                     }
                     0xCD => {
                         // INSTRUCTION: CALL
+                        self.pc += 3; // Address of the next instruction
                         let msb = ((self.pc & 0xff00) >> 8) as u8;
                         let lsb = (self.pc & 0x00ff) as u8;
 
@@ -1173,13 +1177,11 @@ pub mod intel8080 {
                             self.pc += 1;
                         }
                     }
-                    0xD3 => {
-                        // INSTRUCTION: OUT
-                        self.pc += 1;
-                    }
+                    0xD3 => { self.pc += 1; }
                     0xD4 => {
                         // INSTRUCTION: CNC
                         if self.flags.carry == 0 {
+                            self.pc += 3; // Address of the next instruction
                             let msb = ((self.pc & 0xff00) >> 8) as u8;
                             let lsb = (self.pc & 0x00ff) as u8;
 
@@ -1236,6 +1238,7 @@ pub mod intel8080 {
                     0xDC => {
                         // INSTRUCTION: CC
                         if self.flags.carry == 1 {
+                            self.pc += 3; // Address of the next instruction
                             let msb = ((self.pc & 0xff00) >> 8) as u8;
                             let lsb = (self.pc & 0x00ff) as u8;
 
@@ -1311,7 +1314,7 @@ pub mod intel8080 {
                     0xE4 => {
                         // INSTRUCTION: CPO
                         if self.flags.parity == 0 {
-                            self.pc += 1; // Next instruction to be executed
+                            self.pc += 3; // Address of the next instruction
                             let msb = ((self.pc & 0xff00) >> 8) as u8;
                             let lsb = (self.pc & 0x00ff) as u8;
 
@@ -1385,7 +1388,7 @@ pub mod intel8080 {
                     0xEC => {
                         // INSTRUCTION: CPE
                         if self.flags.parity == 1 {
-                            self.pc += 1; // Next instruction to be executed
+                            self.pc += 3; // Address of the next instruction
                             let msb = ((self.pc & 0xff00) >> 8) as u8;
                             let lsb = (self.pc & 0x00ff) as u8;
 
@@ -1451,6 +1454,7 @@ pub mod intel8080 {
                     0xF4 => {
                         // INSTRUCTION: CP
                         if self.flags.sign == 0 {
+                            self.pc += 3; // Address of the next instruction
                             let msb = ((self.pc & 0xff00) >> 8) as u8;
                             let lsb = (self.pc & 0x00ff) as u8;
 
@@ -1522,6 +1526,7 @@ pub mod intel8080 {
                     0xFC => {
                         // INSTRUCTION: CM
                         if self.flags.sign == 1 {
+                            self.pc += 3; // Address of the next instruction
                             let msb = ((self.pc & 0xff00) >> 8) as u8;
                             let lsb = (self.pc & 0x00ff) as u8;
 
