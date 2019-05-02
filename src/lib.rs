@@ -1051,9 +1051,7 @@ pub mod intel8080 {
 
                             self.pc = addr;
                             self.sp -= 2;
-                        } else {
-                            self.pc += 1;
-                        }
+                        } else { self.pc += 1; }
                     }
                     0xC5 => { push(self, 'B'); self.pc += 1; }
                     0xC6 => {
@@ -1103,39 +1101,36 @@ pub mod intel8080 {
                             self.pc += 1;
                         }
                     }
-                    0xCB => { 
-                        // INSTRUCTION: NOP
-                        self.pc += 1; 
-                    }
+                    0xCB => { self.pc += 1; }
                     0xCC => {
                         // INSTRUCTION: CZ
                         if self.flags.zero == 1 {
                             let msb = ((self.pc & 0xff00) >> 8) as u8;
                             let lsb = (self.pc & 0x00ff) as u8;
 
-                            self.memory[self.sp] = lsb; self.sp += 1;
-                            self.memory[self.sp] = msb; self.sp += 1;
+                            self.memory[self.sp - 1] = msb; 
+                            self.memory[self.sp - 2] = lsb;
 
                             let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
                                         (self.memory[self.pc + 1] as u16)) as usize;
 
-                            self.pc = addr
-                        } else {
-                            self.pc += 1;
-                        }
+                            self.pc = addr;
+                            self.sp -= 2;
+                        } else { self.pc += 1; }
                     }
                     0xCD => {
                         // INSTRUCTION: CALL
                         let msb = ((self.pc & 0xff00) >> 8) as u8;
                         let lsb = (self.pc & 0x00ff) as u8;
 
-                        self.memory[self.sp] = lsb; self.sp += 1;
-                        self.memory[self.sp] = msb; self.sp += 1;
+                        self.memory[self.sp - 1] = msb; 
+                        self.memory[self.sp - 2] = lsb;
 
                         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
                                     (self.memory[self.pc + 1] as u16)) as usize;
 
-                        self.pc = addr
+                        self.pc = addr;
+                        self.sp -= 2;
                     }
                     0xCE => {
                         // INSTRUCTION: ACI
@@ -1143,23 +1138,14 @@ pub mod intel8080 {
                                                              self.flags.carry as u16);
                         
                         self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                        self.flags.parity = parity(result, 16);
+                        self.flags.zero = (((result as u8) & 0xff) == 0) as u8;
+                        self.flags.sign = (((result as u8) & 0x80) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
 
                         self.regs.a = result as u8;
                         self.pc += 2;
                     }
-                    0xCF => {
-                        // INSTRUCTION: RST 1
-                        let msb = ((self.pc & 0xff00) >> 8) as u8;
-                        let lsb = (self.pc & 0x00ff) as u8;
-
-                        self.memory[self.sp] = lsb; self.sp += 1;
-                        self.memory[self.sp] = msb; self.sp += 1;
-
-                        self.pc = (1_u8 << 3) as usize;
-                    }
+                    0xCF => { rst(self, 1); }
 
                     _ => {}
 
