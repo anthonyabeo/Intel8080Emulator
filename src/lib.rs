@@ -418,6 +418,49 @@ pub mod cpu {
 
             state.sp += 2;
         }
+
+        pub fn push(state: &mut Intel8080, byte: char) {
+            match byte {
+                'B' => {
+                    state.memory[state.sp - 1] = state.regs.b;
+                    state.memory[state.sp - 2] = state.regs.c;
+                }
+                'D' => {
+                    state.memory[state.sp - 1] = state.regs.d;
+                    state.memory[state.sp - 2] = state.regs.e;
+                }
+                'H' => {
+                    state.memory[state.sp - 1] = state.regs.h;
+                    state.memory[state.sp - 2] = state.regs.l;
+                }
+                'P' => {
+                    state.memory[state.sp - 1] = state.regs.a;
+
+                    let psw = state.flags.zero             |
+                              state.flags.sign      << 1   |
+                              state.flags.parity    << 2   |
+                              state.flags.carry     << 3   |
+                              state.flags.aux_carry << 4 ;
+
+                    state.memory[state.sp - 2] = psw;
+                }
+                _ => {}
+            }
+
+            state.sp -= 2;
+        }
+
+        pub fn rst(state: &mut Intel8080, code: u8) {
+            let msb = ((state.pc & 0xff00) >> 8) as u8;
+            let lsb = (state.pc & 0x00ff) as u8;
+            
+            state.memory[state.sp - 1] = msb;
+            state.memory[state.sp - 2] = lsb;
+
+            state.pc = ((code as u16) << 3) as usize;
+
+            state.sp -= 2;
+        }
     }
 
     pub struct ConditionFlags {
@@ -1000,49 +1043,32 @@ pub mod intel8080 {
                             let msb = ((self.pc & 0xff00) >> 8) as u8;
                             let lsb = (self.pc & 0x00ff) as u8;
 
-                            self.memory[self.sp] = lsb; 
-                            self.memory[self.sp + 1] = msb;
+                            self.memory[self.sp - 1] = msb; 
+                            self.memory[self.sp - 2] = lsb;
 
                             let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
                                         (self.memory[self.pc + 1] as u16)) as usize;
 
                             self.pc = addr;
-                            self.sp += 2;
+                            self.sp -= 2;
                         } else {
                             self.pc += 1;
                         }
                     }
-                    0xC5 => {
-                        // INSTRUCTION: PUSH B
-                        self.memory[self.sp - 1] = self.regs.b;
-                        self.memory[self.sp - 2] = self.regs.c;
-
-                        self.sp -= 2;
-
-                        self.pc += 1;
-                    }
+                    0xC5 => { push(self, 'B'); self.pc += 1; }
                     0xC6 => {
                         // INSTRUCTION: ADI
                         let result = (self.regs.a as u16) + (self.memory[self.pc + 1] as u16);
                         
                         self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = ((result & 0xffff) == 0) as u8;
-                        self.flags.sign = ((result & 0x8000) != 0) as u8;
-                         self.flags.parity = parity(result, 16);
+                        self.flags.zero = (((result as u8) & 0xff) == 0) as u8;
+                        self.flags.sign = (((result as u8) & 0x80) != 0) as u8;
+                        self.flags.parity = parity(result, 8);
 
                         self.regs.a = result as u8;
                         self.pc += 2;
                     }
-                    0xC7 => {
-                        // INSTRUCTION: RST 0
-                        let msb = ((self.pc & 0xff00) >> 8) as u8;
-                        let lsb = (self.pc & 0x00ff) as u8;
-
-                        self.memory[self.sp] = lsb; self.sp += 1;
-                        self.memory[self.sp] = msb;
-
-                        self.pc = 0;
-                    }
+                    0xC7 => { rst(self, 0); }
                     0xC8 => {
                         // INSTRUCTION: RZ
                         if self.flags.zero == 1 {
@@ -1185,15 +1211,7 @@ pub mod intel8080 {
                     //         self.pc += 1;
                     //     }
                     // }
-                    // 0xD5 => {
-                    //     // INSTRUCTION: PUSH D
-                    //     self.memory[self.sp - 1] = self.regs.d;
-                    //     self.memory[self.sp - 2] = self.regs.e;
-
-                    //     self.sp -= 2;
-
-                    //     self.pc += 1;
-                    // }
+                    // 0xD5 => { push(self, 'D'); self.pc += 1; }
                     // 0xD6 => {
                     //     // INSTRUCTION: SUI
                     //     let result = (self.regs.a as u16) - (self.memory[self.pc + 1] as u16);
@@ -1350,15 +1368,7 @@ pub mod intel8080 {
                     //         self.pc += 1;
                     //     }
                     // }
-                    // 0xE5 => {
-                    //     // INSTRUCTION: PUSH H
-                    //     self.memory[self.sp - 1] = self.regs.h;
-                    //     self.memory[self.sp - 2] = self.regs.l;
-
-                    //     self.sp -= 2;
-
-                    //     self.pc += 1;
-                    // }
+                    // 0xE5 => { push(self, 'H'); self.pc += 1; }
                     // 0xE6 => {
                     //     // INSTRUCTION: ANI
                     //     let result = (self.regs.a as u16) & (self.memory[self.pc + 1] as u16);
@@ -1540,21 +1550,7 @@ pub mod intel8080 {
                     //         self.pc += 1;
                     //     }
                     // }   
-                    // 0xF5 => {
-                    //     // INSTRUCTION: PUSH PSW
-                    //     self.memory[self.sp - 1] = self.regs.a;
-
-                    //     let psw = self.flags.zero        |
-					// 		      self.flags.sign << 1   |
-					// 		      self.flags.parity << 2 |
-					// 		      self.flags.carry << 3  |
-					// 		      self.flags.aux_carry << 4 ;
-
-			        //     self.memory[self.sp - 2] = psw;
-			        //     self.sp -= 2;
-
-                    //     self.pc += 1;
-                    // }
+                    // 0xF5 => { push(self, 'P'); self.pc += 1; }
                     // 0xF6 => {
                     //     // INSTRUCTION: ORI
                     //     let result = (self.regs.a as u16) | (self.memory[self.pc + 1] as u16);

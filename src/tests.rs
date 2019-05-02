@@ -609,7 +609,7 @@ fn emulate_jnz() {
 fn emulate_cnz() {
     let mut machine = Intel8080::new();
     machine.flags.zero = 0;
-    machine.sp = 0x09;
+    machine.sp = 0x0B;
 
     machine.memory = vec![
         0, 0, 0, 0, 0,
@@ -621,7 +621,46 @@ fn emulate_cnz() {
     machine.emulate();
 
     assert_eq!(machine.pc, 0x08);
-    assert_eq!(machine.memory[9], 0x05);
     assert_eq!(machine.memory[10], 0x00);
-    assert_eq!(machine.sp, 0x0b);
+    assert_eq!(machine.memory[9], 0x05);
+    assert_eq!(machine.sp, 0x09);
+}
+
+#[test]
+fn emulate_push() {
+    let mut machine = Intel8080::new();
+    machine.regs.b = 0x7b;
+    machine.regs.c = 0x8c;
+    machine.sp = 0x05;
+
+    machine.memory = vec![
+        0xc5,
+        0x76,
+        0, 0, 0, 0
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.sp, 0x03);
+    assert_eq!(machine.memory[4], 0x7b);
+    assert_eq!(machine.memory[3], 0x8c);
+}
+
+#[test]
+fn emulate_rst() {
+    let mut machine = Intel8080::new();
+    machine.pc = 0x03;
+    machine.sp = 0x06;
+
+    machine.memory = vec![
+        0, 0, 0x76,
+        0xc7,
+        0, 0, 0,
+    ];
+
+    machine.emulate();
+
+    assert_eq!(machine.memory[5], 0x00);
+    assert_eq!(machine.memory[4], 0x03);
+    assert_eq!(machine.pc, 0x02);
 }
