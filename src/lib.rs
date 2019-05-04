@@ -202,13 +202,13 @@ pub mod cpu {
 
             let mut result = 0;
             match byte {
-                'B' => { result = (state.regs.b as u16) - 1; state.regs.b = result as u8; }
-                'C' => { result = (state.regs.c as u16) - 1; state.regs.c = result as u8; }
-                'D' => { result = (state.regs.d as u16) - 1; state.regs.d = result as u8; }
-                'E' => { result = (state.regs.e as u16) - 1; state.regs.e = result as u8; }
-                'H' => { result = (state.regs.h as u16) - 1; state.regs.h = result as u8; }
-                'L' => { result = (state.regs.l as u16) - 1; state.regs.l = result as u8; }
-                'A' => { result = (state.regs.a as u16) - 1; state.regs.a = result as u8; }
+                'B' => { result = (state.regs.b as i16) - 1; state.regs.b = result as u8; }
+                'C' => { result = (state.regs.c as i16) - 1; state.regs.c = result as u8; }
+                'D' => { result = (state.regs.d as i16) - 1; state.regs.d = result as u8; }
+                'E' => { result = (state.regs.e as i16) - 1; state.regs.e = result as u8; }
+                'H' => { result = (state.regs.h as i16) - 1; state.regs.h = result as u8; }
+                'L' => { result = (state.regs.l as i16) - 1; state.regs.l = result as u8; }
+                'A' => { result = (state.regs.a as i16) - 1; state.regs.a = result as u8; }
                 'M' => {
                         let addr = (((state.regs.h as u16) << 8) | (state.regs.l as u16)) as usize;
                         let result = (state.memory[addr] as u16) - 1;
@@ -220,7 +220,7 @@ pub mod cpu {
 
             state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
             state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-            state.flags.parity = parity(result, 8);
+            state.flags.parity = parity(result as u16, 8);
         }
 
         pub fn dad(state: &mut Intel8080, byte: char) {
@@ -533,7 +533,7 @@ pub mod intel8080 {
                 pc: 0_usize,
                 sp: 0_usize,
                 int_enable: 0,
-                memory: vec![0_u8; 0xFFFF] // 65 KB of Memory
+                memory: vec![0_u8; 0x10000] // 65 KB of Memory
             }
         }
 
@@ -756,7 +756,7 @@ pub mod intel8080 {
                         // DESCRIPTION: 
                         //      LDA load~ the accumulator with a copy of the byte at the location 
                         //      specified In bytes two and three of the LDA instruction.
-
+                        println!("{:02x}: LDA A", self.pc);
                         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
                                     (self.memory[self.pc + 1] as u16)) as usize;
 
@@ -1107,9 +1107,9 @@ pub mod intel8080 {
                     0xCC => {
                         // INSTRUCTION: CZ
                         if self.flags.zero == 1 {
-                            self.pc += 3; // Address of the next instruction
-                            let msb = ((self.pc & 0xff00) >> 8) as u8;
-                            let lsb = (self.pc & 0x00ff) as u8;
+                            let next_instr_addr = self.pc + 3;
+                            let msb = ((next_instr_addr & 0xff00) >> 8) as u8;
+                            let lsb = (next_instr_addr & 0x00ff) as u8;
 
                             self.memory[self.sp - 1] = msb; 
                             self.memory[self.sp - 2] = lsb;
@@ -1123,9 +1123,9 @@ pub mod intel8080 {
                     }
                     0xCD => {
                         // INSTRUCTION: CALL
-                        self.pc += 3; // Address of the next instruction
-                        let msb = ((self.pc & 0xff00) >> 8) as u8;
-                        let lsb = (self.pc & 0x00ff) as u8;
+                        let next_instr_addr = self.pc + 3;
+                        let msb = ((next_instr_addr & 0xff00) >> 8) as u8;
+                        let lsb = (next_instr_addr & 0x00ff) as u8;
 
                         self.memory[self.sp - 1] = msb; 
                         self.memory[self.sp - 2] = lsb;
@@ -1181,9 +1181,9 @@ pub mod intel8080 {
                     0xD4 => {
                         // INSTRUCTION: CNC
                         if self.flags.carry == 0 {
-                            self.pc += 3; // Address of the next instruction
-                            let msb = ((self.pc & 0xff00) >> 8) as u8;
-                            let lsb = (self.pc & 0x00ff) as u8;
+                            let next_instr_addr = self.pc + 3;
+                            let msb = ((next_instr_addr & 0xff00) >> 8) as u8;
+                            let lsb = (next_instr_addr & 0x00ff) as u8;
 
                             self.memory[self.sp - 1] = msb; 
                             self.memory[self.sp - 2] = lsb;
@@ -1238,9 +1238,9 @@ pub mod intel8080 {
                     0xDC => {
                         // INSTRUCTION: CC
                         if self.flags.carry == 1 {
-                            self.pc += 3; // Address of the next instruction
-                            let msb = ((self.pc & 0xff00) >> 8) as u8;
-                            let lsb = (self.pc & 0x00ff) as u8;
+                            let next_instr_addr = self.pc + 3;
+                            let msb = ((next_instr_addr & 0xff00) >> 8) as u8;
+                            let lsb = (next_instr_addr & 0x00ff) as u8;
 
                             self.memory[self.sp - 1] = msb; 
                             self.memory[self.sp - 2] = lsb;
@@ -1545,12 +1545,12 @@ pub mod intel8080 {
                     0xFD => { self.pc += 1; }
                     0xFE => {
                         // INSTRUCTION: CPI
-                        let result = (self.regs.a as u16) - (self.memory[self.pc + 1] as u16);
+                        let result = (self.regs.a as i16) - (self.memory[self.pc + 1] as i16);
                         
                         self.flags.carry = (result > 0xff) as u8;
                         self.flags.zero = (((result as u8) & 0xff) == 0) as u8;
                         self.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-                        self.flags.parity = parity(result, 8);
+                        self.flags.parity = parity(result as u16, 8);
 
                         self.regs.a = result as u8;
                         self.pc += 2;
