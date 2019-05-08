@@ -756,10 +756,10 @@ pub mod intel8080 {
                         // DESCRIPTION: 
                         //      LDA load~ the accumulator with a copy of the byte at the location 
                         //      specified In bytes two and three of the LDA instruction.
-                        println!("{:02x}: LDA A", self.pc);
                         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
                                     (self.memory[self.pc + 1] as u16)) as usize;
 
+                        println!("{:04x}: LDA {:04x}", self.pc, addr);
                         self.regs.a = self.memory[addr];
 
                         self.pc += 3;
@@ -794,7 +794,6 @@ pub mod intel8080 {
                     0x4D => { self.regs.c = self.regs.l; self.pc += 1; }
                     0x4E => {
                         // INSTRUCTION: MOV C, M
-                        // DESCRIPTION: move from memory into C
                         let addr = (((self.regs.h as u16) << 8) | (self.regs.l as u16)) as usize;
                         self.regs.c = self.memory[addr];
 
@@ -960,7 +959,7 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0xA7 => { ana(self, self.regs.l); self.pc += 1; }
+                    0xA7 => { println!("{:04x}: ANA A", self.pc); ana(self, self.regs.a); self.pc += 1; }
                     0xA8 => { xra(self, self.regs.b); self.pc += 1; }
                     0xA9 => { xra(self, self.regs.c); self.pc += 1; }
                     0xAA => { xra(self, self.regs.d); self.pc += 1; }
@@ -974,7 +973,7 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0xAF => { xra(self, self.regs.l); self.pc += 1; }
+                    0xAF => { xra(self, self.regs.a); self.pc += 1; }
 
                     0xB0 => { ora(self, self.regs.b); self.pc += 1; }
                     0xB1 => { ora(self, self.regs.c); self.pc += 1; }
@@ -1003,7 +1002,7 @@ pub mod intel8080 {
 
                         self.pc += 1;
                     }
-                    0xBF => { cmp(self, self.regs.l); self.pc += 1; }
+                    0xBF => { cmp(self, self.regs.a); self.pc += 1; }
 
 
                     0xC0 => {
@@ -1026,9 +1025,10 @@ pub mod intel8080 {
                             let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
                                         (self.memory[self.pc + 1] as u16)) as usize;
 
+                            println!("{:04x}: JMP {:04x}", self.pc, addr);
                             self.pc = addr;
                         } else {
-                            self.pc += 1;
+                            self.pc += 3;
                         }
                     }
                     0xC3 => {
@@ -1053,7 +1053,7 @@ pub mod intel8080 {
 
                             self.pc = addr;
                             self.sp -= 2;
-                        } else { self.pc += 1; }
+                        } else { self.pc += 3; }
                     }
                     0xC5 => { push(self, 'B'); self.pc += 1; }
                     0xC6 => {
@@ -1100,7 +1100,7 @@ pub mod intel8080 {
 
                             self.pc = addr;
                         } else {
-                            self.pc += 1;
+                            self.pc += 3;
                         }
                     }
                     0xCB => { self.pc += 1; }
@@ -1119,7 +1119,7 @@ pub mod intel8080 {
 
                             self.pc = addr;
                             self.sp -= 2;
-                        } else { self.pc += 1; }
+                        } else { self.pc += 3; }
                     }
                     0xCD => {
                         // INSTRUCTION: CALL
@@ -1174,7 +1174,7 @@ pub mod intel8080 {
 
                             self.pc = addr;
                         } else {
-                            self.pc += 1;
+                            self.pc += 3;
                         }
                     }
                     0xD3 => { self.pc += 1; }
@@ -1194,7 +1194,7 @@ pub mod intel8080 {
                             self.pc = addr;
                             self.sp -= 2;
                         } else {
-                            self.pc += 1;
+                            self.pc += 3;
                         }
                     }
                     0xD5 => { push(self, 'D'); self.pc += 1; }
@@ -1231,7 +1231,7 @@ pub mod intel8080 {
 
                             self.pc = addr;
                         } else {
-                            self.pc += 1;
+                            self.pc += 3;
                         }
                     }
                     0xDB => { self.pc += 1; }
@@ -1251,7 +1251,7 @@ pub mod intel8080 {
                             self.pc = addr;
                             self.sp -= 2;
                         } else {
-                            self.pc += 1;
+                            self.pc += 3;
                         }
                     }
                     0xDD => { self.pc += 1; }
@@ -1293,7 +1293,7 @@ pub mod intel8080 {
 
                             self.pc = addr;
                         } else {
-                            self.pc += 1;
+                            self.pc += 3;
                         }
                     }
                     0xE3 => {
@@ -1327,7 +1327,7 @@ pub mod intel8080 {
                             self.pc = addr;
                             self.sp -= 2;
                         } else {
-                            self.pc += 1;
+                            self.pc += 3;
                         }
                     }
                     0xE5 => { push(self, 'H'); self.pc += 1; }
@@ -1370,7 +1370,7 @@ pub mod intel8080 {
 
                             self.pc = addr;
                         } else {
-                            self.pc += 1;
+                            self.pc += 3;
                         }
                     }
                     0xEB => {
@@ -1401,7 +1401,7 @@ pub mod intel8080 {
                             self.pc = addr;
                             self.sp -= 2;
                         } else {
-                            self.pc += 1;
+                            self.pc += 3;
                         }
                     }
                     0xED => { self.pc += 1; }
@@ -1421,6 +1421,7 @@ pub mod intel8080 {
 
 
                     0xF0 => {
+                        // INSTRUCTION: RP
                         if self.flags.sign == 0 {
                             let lsb = self.memory[self.sp];
                             let msb = self.memory[self.sp + 1];
@@ -1441,7 +1442,7 @@ pub mod intel8080 {
 
                             self.pc = addr;
                         } else {
-                            self.pc += 1;
+                            self.pc += 3;
                         }
                     }
                     0xF3 => {
@@ -1467,7 +1468,7 @@ pub mod intel8080 {
                             self.pc = addr;
                             self.sp += 2;
                         } else {
-                            self.pc += 1;
+                            self.pc += 3;
                         }
                     }   
                     0xF5 => { push(self, 'P'); self.pc += 1; }
@@ -1512,7 +1513,7 @@ pub mod intel8080 {
 
                             self.pc = addr;
                         } else {
-                            self.pc += 1;
+                            self.pc += 3;
                         }
                     }
                     0xFB => {
@@ -1539,7 +1540,7 @@ pub mod intel8080 {
                             self.pc = addr;
                             self.sp += 2;
                         } else {
-                            self.pc += 1;
+                            self.pc += 3;
                         }
                     }
                     0xFD => { self.pc += 1; }
@@ -1547,12 +1548,11 @@ pub mod intel8080 {
                         // INSTRUCTION: CPI
                         let result = (self.regs.a as i16) - (self.memory[self.pc + 1] as i16);
                         
-                        self.flags.carry = (result > 0xff) as u8;
-                        self.flags.zero = (((result as u8) & 0xff) == 0) as u8;
+                        self.flags.carry = (self.regs.a < self.memory[self.pc + 1]) as u8;
+                        self.flags.zero = (result == 0) as u8;
                         self.flags.sign = (((result as u8) & 0x80) != 0) as u8;
                         self.flags.parity = parity(result as u16, 8);
 
-                        self.regs.a = result as u8;
                         self.pc += 2;
                     }
                     0xFF => { rst(self, 7); }
