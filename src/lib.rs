@@ -537,7 +537,7 @@ pub mod intel8080 {
             }
         }
 
-        pub fn load_game_rom(&mut self, file_name: &str) {
+        pub fn load_program(&mut self, file_name: &str) {
             let mut f = match File::open(Path::new(file_name)) {
                 Ok(file) => file,
                 Err(e) => panic!("Could not open file - {}", e)
@@ -547,7 +547,7 @@ pub mod intel8080 {
             
         }
         
-        pub fn emulate(&mut self) {
+        pub fn run(&mut self) {
             while self.memory[self.pc] != 0x76 { // while opcode != HLT (0x76)
                 match self.memory[self.pc] {
                     0x00 => { self.pc += 1; } // NOP
