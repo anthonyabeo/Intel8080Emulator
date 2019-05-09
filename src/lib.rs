@@ -451,9 +451,10 @@ pub mod cpu {
         }
 
         pub fn rst(state: &mut Intel8080, code: u8) {
-            state.pc += 1; // Address of the next instruction
-            let msb = ((state.pc & 0xff00) >> 8) as u8;
-            let lsb = (state.pc & 0x00ff) as u8;
+            let addr = state.pc + 1; // Address of the next instruction
+
+            let msb = ((addr & 0xff00) >> 8) as u8;
+            let lsb = (addr & 0x00ff) as u8;
             
             state.memory[state.sp - 1] = msb;
             state.memory[state.sp - 2] = lsb;
@@ -1041,9 +1042,9 @@ pub mod intel8080 {
                     0xC4 => {
                         // INSTRUCTION: CNZ
                         if self.flags.zero == 0 {
-                            self.pc += 3; // Address of the next instruction
-                            let msb = ((self.pc & 0xff00) >> 8) as u8;
-                            let lsb = (self.pc & 0x00ff) as u8;
+                            let next_instr_addr = self.pc + 3; // Address of the next instruction
+                            let msb = ((next_instr_addr & 0xff00) >> 8) as u8;
+                            let lsb = (next_instr_addr & 0x00ff) as u8;
 
                             self.memory[self.sp - 1] = msb; 
                             self.memory[self.sp - 2] = lsb;

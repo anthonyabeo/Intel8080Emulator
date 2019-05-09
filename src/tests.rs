@@ -13,7 +13,7 @@ fn emulate_opcodes_1_and_2 () {
         0, 0, 0, 0, 0
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.b, 0);
     assert_eq!(machine.regs.c, 10);
@@ -32,7 +32,7 @@ fn emulate_opcodes_3() {
         0, 0, 0, 0, 0
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.b, 0x39);
     assert_eq!(machine.regs.c, 0x00);
@@ -48,7 +48,7 @@ fn emulate_opcodes_4_0x0c_5_0x0d_6_0x0e() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.b, 0x9A);
     assert_eq!(machine.flags.zero, 0);
@@ -63,7 +63,7 @@ fn emulate_opcodes_4_0x0c_5_0x0d_6_0x0e() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.c, 0x9A);
     assert_eq!(machine.flags.zero, 0);
@@ -78,7 +78,7 @@ fn emulate_opcodes_4_0x0c_5_0x0d_6_0x0e() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.b, 0x07);
     assert_eq!(machine.flags.zero, 0);
@@ -93,7 +93,7 @@ fn emulate_opcodes_4_0x0c_5_0x0d_6_0x0e() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.c, 0x07);
     assert_eq!(machine.flags.zero, 0);
@@ -108,7 +108,7 @@ fn emulate_opcodes_4_0x0c_5_0x0d_6_0x0e() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.b, 45);
 
@@ -120,7 +120,7 @@ fn emulate_opcodes_4_0x0c_5_0x0d_6_0x0e() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.c, 45);
 }
@@ -134,7 +134,7 @@ fn emulate_opcode_7_0x0f() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.a, 0xe5);
     assert_eq!(machine.flags.carry, 1);
@@ -147,7 +147,7 @@ fn emulate_opcode_7_0x0f() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.a, 0x79);
     assert_eq!(machine.flags.carry, 0);
@@ -159,7 +159,7 @@ fn emulate_opcode_7_0x0f() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.a, 0xf9);
     assert_eq!(machine.flags.carry, 1);
@@ -178,7 +178,7 @@ fn emulate_9() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.h, 0xd5);
     assert_eq!(machine.regs.l, 0x1a);
@@ -195,7 +195,7 @@ fn emulate_9() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.h, 0x00);
     assert_eq!(machine.regs.l, 0x00);
@@ -216,7 +216,7 @@ fn emulate_opcode_0a_and_0b() {
         0x34
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.a, 0x34);
 
@@ -229,7 +229,7 @@ fn emulate_opcode_0a_and_0b() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.b, 0);
     assert_eq!(machine.regs.c, 4);
@@ -244,7 +244,7 @@ fn emulate_opcode_0x17() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.a, 0x6a);
     assert_eq!(machine.flags.carry, 1);
@@ -257,7 +257,7 @@ fn emulate_opcode_0x17() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.a, 0xea);
     assert_eq!(machine.flags.carry, 1);
@@ -273,7 +273,7 @@ fn emulate_0x1f() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.a, 0xb5);
     assert_eq!(machine.flags.carry, 0);
@@ -295,7 +295,7 @@ fn emulate_shld() {
         0
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.memory[4], 0x29);
     assert_eq!(machine.memory[5], 0xae);
@@ -314,7 +314,7 @@ fn emulate_shld() {
         0xae
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.l, 0x29);
     assert_eq!(machine.regs.h, 0xae);
@@ -330,7 +330,7 @@ fn emulate_cma() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
     
     assert_eq!(machine.regs.a, 0xae);
 }
@@ -345,7 +345,7 @@ fn emulate_daa() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.a, 1);
     assert_eq!(machine.flags.carry, 1);
@@ -367,7 +367,7 @@ fn emulate_sta() {
         0
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.memory[4], machine.regs.a);
 }
@@ -383,7 +383,7 @@ fn emulate_add() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.a, 0x9a);
     assert_eq!(machine.flags.sign, 1);
@@ -404,7 +404,7 @@ fn emulate_adc() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.a, 0x7f);
     assert_eq!(machine.flags.sign, 0);
@@ -422,7 +422,7 @@ fn emulate_adc() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.a, 0x80);
     assert_eq!(machine.flags.sign, 1);
@@ -442,7 +442,7 @@ fn emulate_sub() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.a, 0x00);
     assert_eq!(machine.flags.sign, 0);
@@ -463,7 +463,7 @@ fn emulate_sbb() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.a, 0x01);
     assert_eq!(machine.flags.sign, 0);
@@ -483,7 +483,7 @@ fn emulate_ana() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.a, 0x0c);
     assert_eq!(machine.flags.sign, 0);
@@ -503,7 +503,7 @@ fn emulate_xra() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.a, 0x24);
     assert_eq!(machine.flags.sign, 0);
@@ -523,7 +523,7 @@ fn emulate_ora() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.a, 0x3f);
     assert_eq!(machine.flags.sign, 0);
@@ -543,7 +543,7 @@ fn emulate_cmp() {
         0x76
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.a, 0x05);
     assert_eq!(machine.flags.sign, 0);
@@ -563,7 +563,7 @@ fn emulate_pop() {
         0, 0, 0, 0xae, 0x2b 
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.regs.c, 0xae);
     assert_eq!(machine.regs.b, 0x2b);
@@ -582,7 +582,7 @@ fn emulate_rnz() {
         0x76, 0x04, 0x00, 0
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.pc, 0x04);
     assert_eq!(machine.sp, 0x07);
@@ -600,7 +600,7 @@ fn emulate_jnz() {
         0x76, 0x04, 0x00, 0
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.pc, 0x04);
 }
@@ -618,11 +618,11 @@ fn emulate_cnz() {
         0, 0, 0, 0
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.pc, 0x08);
     assert_eq!(machine.memory[10], 0x00);
-    assert_eq!(machine.memory[9], 0x05);
+    assert_eq!(machine.memory[9], 0x08);
     assert_eq!(machine.sp, 0x09);
 }
 
@@ -639,7 +639,7 @@ fn emulate_push() {
         0, 0, 0, 0
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.sp, 0x03);
     assert_eq!(machine.memory[4], 0x7b);
@@ -658,9 +658,10 @@ fn emulate_rst() {
         0, 0, 0,
     ];
 
-    machine.emulate();
+    machine.run();
 
     assert_eq!(machine.memory[5], 0x00);
-    assert_eq!(machine.memory[4], 0x03);
+    assert_eq!(machine.memory[4], 0x04);
     assert_eq!(machine.pc, 0x02);
+    assert_eq!(machine.sp, 0x04);
 }
