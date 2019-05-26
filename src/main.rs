@@ -1,7 +1,7 @@
 use std::env;
 use std::process;
 
-use emulator_intel8080::intel8080::Intel8080;
+use emulator_intel8080::cpu::intel8080::Intel8080;
 
 
 fn main() {

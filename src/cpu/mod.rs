@@ -1,4 +1,5 @@
 pub mod instructions;
+pub mod intel8080;
 pub mod utils {
     pub fn parity(result: u16, size: usize) -> u8 {
         let mut counter = 0;

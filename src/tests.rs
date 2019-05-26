@@ -1,4 +1,4 @@
-use crate::intel8080::Intel8080;
+use crate::cpu::intel8080::Intel8080;
 
 #[test]
 fn emulate_opcodes_1_and_2 () {
