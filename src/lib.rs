@@ -41,7 +41,6 @@ pub mod intel8080 {
             };
 
             f.read(&mut self.memory).unwrap();
-            
         }
         
         pub fn run(&mut self) {

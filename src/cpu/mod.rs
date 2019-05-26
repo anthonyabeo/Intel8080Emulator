@@ -1,5 +1,4 @@
 pub mod instructions;
-
 pub mod utils {
     pub fn parity(result: u16, size: usize) -> u8 {
         let mut counter = 0;

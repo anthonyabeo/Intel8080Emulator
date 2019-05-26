@@ -419,10 +419,10 @@ pub fn push(state: &mut Intel8080, byte: char) {
             state.memory[state.sp - 1] = state.regs.a;
 
             let psw = state.flags.zero             |
-                        state.flags.sign      << 1   |
-                        state.flags.parity    << 2   |
-                        state.flags.carry     << 3   |
-                        state.flags.aux_carry << 4 ;
+                        state.flags.sign      << 1 |
+                        state.flags.parity    << 2 |
+                        state.flags.carry     << 3 |
+                        state.flags.aux_carry << 4;
 
             state.memory[state.sp - 2] = psw;
         }
