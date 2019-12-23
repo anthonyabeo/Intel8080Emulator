@@ -15,7 +15,7 @@ pub fn add_to_accu(state: &mut Intel8080, byte: u8) {
     state.flags.carry = (result > 0xff) as u8;
     state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
     state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-    state.flags.parity = parity(result, 8);
+    state.flags.parity = parity(result);
 
     state.regs.a = result as u8;
 }
@@ -33,7 +33,7 @@ pub fn adc(state: &mut Intel8080, byte: u8) {
     state.flags.carry = (result > 0xff) as u8;
     state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
     state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-    state.flags.parity = parity(result, 16);
+    state.flags.parity = parity(result);
 
     state.regs.a = result as u8;
 }
@@ -174,7 +174,7 @@ pub fn inr(state: &mut Intel8080, byte: char) {
     
     state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
     state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-    state.flags.parity = parity(result, 8);
+    state.flags.parity = parity(result);
 }
 
 pub fn dcr(state: &mut Intel8080, byte: char) {
@@ -202,7 +202,7 @@ pub fn dcr(state: &mut Intel8080, byte: char) {
 
     state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
     state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-    state.flags.parity = parity(result as u16, 8);
+    state.flags.parity = parity(result as u16);
 }
 
 pub fn dad(state: &mut Intel8080, byte: char) {
@@ -310,7 +310,7 @@ pub fn sub_accu(state: &mut Intel8080, byte: u8) {
     state.flags.carry = (result > 0xff) as u8;
     state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
     state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-    state.flags.parity = parity(result as u16, 8);
+    state.flags.parity = parity(result as u16);
 
     state.regs.a = result as u8;
 }
@@ -321,7 +321,7 @@ pub fn sbb(state: &mut Intel8080, byte: u8) {
     state.flags.carry = (result > 0xff) as u8;
     state.flags.zero = ((result as u16 & 0xffff) == 0) as u8;
     state.flags.sign = ((result as u16 & 0x8000) != 0) as u8;
-    state.flags.parity = parity(result, 16);
+    state.flags.parity = parity(result);
 
     state.regs.a = result as u8;
 }
@@ -332,7 +332,7 @@ pub fn ana(state: &mut Intel8080, byte: u8) {
     state.flags.carry = (result > 0xff) as u8;
     state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
     state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-    state.flags.parity = parity(result, 8);
+    state.flags.parity = parity(result);
 
     state.regs.a = result as u8;
 }
@@ -343,7 +343,7 @@ pub fn xra(state: &mut Intel8080, byte: u8) {
     state.flags.carry = (result > 0xff) as u8;
     state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
     state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-    state.flags.parity = parity(result, 8);
+    state.flags.parity = parity(result);
 
     state.regs.a = result as u8;
 }
@@ -354,7 +354,7 @@ pub fn ora(state: &mut Intel8080, byte: u8) {
     state.flags.carry = (result > 0xff) as u8;
     state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
     state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-    state.flags.parity = parity(result, 8);
+    state.flags.parity = parity(result);
 
     state.regs.a = result as u8;
 }
@@ -365,7 +365,7 @@ pub fn cmp(state: &mut Intel8080, byte: u8) {
     state.flags.carry = (result > 0xff) as u8;
     state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
     state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-    state.flags.parity = parity(result, 8);
+    state.flags.parity = parity(result);
 
     state.regs.a = result as u8;
 }
@@ -393,7 +393,7 @@ pub fn pop(state: &mut Intel8080, byte: char) {
             state.flags.carry = (result > 0xff) as u8;
             state.flags.zero = (((result as u8) & 0xff) == 0) as u8;
             state.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-            state.flags.parity = parity(result, 8);
+            state.flags.parity = parity(result);
         }
         _ => {}
     }
