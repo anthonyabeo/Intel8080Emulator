@@ -181,7 +181,7 @@ impl Intel8080 {
 
                     self.flags.zero = ((self.regs.a as u16 & 0xffff) == 0) as u8;
                     self.flags.sign = ((self.regs.a as u16 & 0x8000) != 0) as u8;
-                    self.flags.parity = parity(self.regs.a as u16, 8);
+                    self.flags.parity = parity(self.regs.a as u16);
 
                     self.pc += 1;
                 }
@@ -515,7 +515,7 @@ impl Intel8080 {
                         let addr = (((self.memory[self.pc + 2] as u16) << 8) | 
                                     (self.memory[self.pc + 1] as u16)) as usize;
 
-                        println!("{:04x}: JMP {:04x}", self.pc, addr);
+                        println!("{:04x}: JNZ {:04x}", self.pc, addr);
                         self.pc = addr;
                     } else {
                         self.pc += 3;
@@ -553,7 +553,7 @@ impl Intel8080 {
                     self.flags.carry = (result > 0xff) as u8;
                     self.flags.zero = (((result as u8) & 0xff) == 0) as u8;
                     self.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-                    self.flags.parity = parity(result, 8);
+                    self.flags.parity = parity(result);
 
                     self.regs.a = result as u8;
                     self.pc += 2;
@@ -634,7 +634,7 @@ impl Intel8080 {
                     self.flags.carry = (result > 0xff) as u8;
                     self.flags.zero = (((result as u8) & 0xff) == 0) as u8;
                     self.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-                    self.flags.parity = parity(result, 8);
+                    self.flags.parity = parity(result);
 
                     self.regs.a = result as u8;
                     self.pc += 2;
@@ -695,7 +695,7 @@ impl Intel8080 {
                     self.flags.carry = (result > 0xff) as u8;
                     self.flags.zero = (((result as u8) & 0xff) == 0) as u8;
                     self.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-                    self.flags.parity = parity(result, 8);
+                    self.flags.parity = parity(result);
 
                     self.regs.a = result as u8;
                     self.pc += 2;
@@ -753,7 +753,7 @@ impl Intel8080 {
                     self.flags.carry = (result > 0xff) as u8;
                     self.flags.zero = (((result as u8) & 0xff) == 0) as u8;
                     self.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-                    self.flags.parity = parity(result, 8);
+                    self.flags.parity = parity(result);
 
                     self.regs.a = result as u8;
                     self.pc += 2;
@@ -828,7 +828,7 @@ impl Intel8080 {
                     self.flags.carry = (result > 0xff) as u8;
                     self.flags.zero = (((result as u8) & 0xff) == 0) as u8;
                     self.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-                    self.flags.parity = parity(result, 8);
+                    self.flags.parity = parity(result);
 
                     self.regs.a = result as u8;
                     self.pc += 2;
@@ -902,7 +902,7 @@ impl Intel8080 {
                     self.flags.carry = (result > 0xff) as u8;
                     self.flags.zero = (((result as u8) & 0xff) == 0) as u8;
                     self.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-                    self.flags.parity = parity(result, 8);
+                    self.flags.parity = parity(result);
 
                     self.regs.a = result as u8;
                     self.pc += 2;
@@ -969,7 +969,7 @@ impl Intel8080 {
                     self.flags.carry = (result > 0xff) as u8;
                     self.flags.zero = (((result as u8) & 0xff) == 0) as u8;
                     self.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-                    self.flags.parity = parity(result, 8);
+                    self.flags.parity = parity(result);
 
                     self.regs.a = result as u8;
                     self.pc += 2;
@@ -1041,7 +1041,7 @@ impl Intel8080 {
                     self.flags.carry = (self.regs.a < self.memory[self.pc + 1]) as u8;
                     self.flags.zero = (result == 0) as u8;
                     self.flags.sign = (((result as u8) & 0x80) != 0) as u8;
-                    self.flags.parity = parity(result as u16, 8);
+                    self.flags.parity = parity(result as u16);
 
                     self.pc += 2;
                 }

@@ -1,14 +1,15 @@
 pub mod instructions;
 pub mod intel8080;
 pub mod utils {
-    pub fn parity(result: u16, size: usize) -> u8 {
+    pub fn parity(mut result: u16) -> u8
+    {
         let mut counter = 0;
-        let mut res = result as u8;
-        for _ in 0..size {
-            if (res & 0x01) == 1 { counter += 1; }
-            res >>= 1;
+        while result > 0
+        {
+            result &= result - 1;
+            counter += 1;
         }
-        
+
         ((counter & 0x01) == 0) as u8
     }
 }
