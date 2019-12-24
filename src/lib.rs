@@ -1,3 +1,3 @@
 #[cfg(test)]
-pub mod tests;
+pub mod opcode_tests;
 pub mod cpu;
