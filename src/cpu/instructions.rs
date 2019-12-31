@@ -73,8 +73,8 @@ pub fn lxi(state: &mut Intel8080, byte: char) {
 pub fn stax(state: &mut Intel8080, byte: char) {
     // INSTRUCTION: STAX byte
     // DESCRIPTION: 
-    //      The STAX ins :ruction stores a copy of the contents of the accumulator into the memory location addressed
-    //      by register pai B or register pair D.
+    //      The STAX insruction stores a copy of the contents of the accumulator into 
+    //      the memory location addressed by register pai B or register pair D.
 
     let mut addr = 0;
     match byte {

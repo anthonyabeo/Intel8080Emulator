@@ -667,7 +667,14 @@ impl Intel8080 {
                         self.pc += 3;
                     }
                 }
-                0xD3 => { self.pc += 1; }
+                0xD3 => { 
+                    // INSTRUCTION: OUT exp
+                    // DESCRIPTION:
+                    //      The contents of the accumulator are sent to output 
+                    //      device number exp
+
+                    self.pc += 1; 
+                }
                 0xD4 => {
                     // INSTRUCTION: CNC
                     if self.flags.carry == 0 {
@@ -724,7 +731,14 @@ impl Intel8080 {
                         self.pc += 3;
                     }
                 }
-                0xDB => { self.pc += 1; }
+                0xDB => { 
+                    // INSTRUCTION: IN exp
+                    // DESCRIPTION:
+                    //      An eight-bit data byte is read from input device 
+                    //     number exp and replaces the contents of the accumulator
+
+                    self.pc += 1; 
+                }
                 0xDC => {
                     // INSTRUCTION: CC
                     if self.flags.carry == 1 {
