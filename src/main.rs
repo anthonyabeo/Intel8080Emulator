@@ -16,15 +16,28 @@ fn main() {
         process::exit(1);
     }
 
-    let mut window = RenderWindow::new((800, 600), "SPACE INVADERS", Style::CLOSE, &Default::default());
+    let mut window = RenderWindow::new((1024, 768), "SPACE INVADERS", Style::DEFAULT, &Default::default());
     window.set_vertical_sync_enabled(true);
 
     while window.is_open() {
         while let Some(event) = window.poll_event() {
             match event {
-                Event::Closed => {
-                    window.close();
-                    return;
+                Event::Closed => {window.close(); return; },
+                Event::KeyPressed { code, .. } => {
+                    match code {
+                        Key::Space => println!("space key was pressed"),
+                        Key::Left => println!("Left arrow key was pressed"),
+                        Key::Right => println!("Right arrow key was pressed"),
+                        _ => {}
+                    }
+                },
+                Event::KeyReleased { code, .. } => {
+                    match code {
+                        Key::Space => println!("space key was released"),
+                        Key::Left => println!("Left arrow key was released"),
+                        Key::Right => println!("Right arrow key was released"),
+                        _ => {}
+                    }
                 }
                 _ => {
                     window.clear(&Color::BLACK);
