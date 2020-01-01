@@ -2,7 +2,7 @@ use std::fs::File;
 use std::path::Path;
 use std::io::Read;
 
-use crate::cpu::{ConditionFlags, Register};
+use crate::cpu::{ConditionFlags, Register, IOPort};
 use crate::cpu::utils::*;
 use crate::cpu::instructions::*;
 
@@ -13,7 +13,8 @@ pub struct Intel8080 {
     pub pc: usize,
     pub sp: usize,
     pub int_enable: u8,
-    pub memory: Vec<u8>
+    pub memory: Vec<u8>,
+    pub io_port: IOPort
 }
 
 impl Intel8080 {
@@ -24,7 +25,8 @@ impl Intel8080 {
             pc: 0_usize,
             sp: 0_usize,
             int_enable: 0,
-            memory: vec![0_u8; 0x10000] // 65 KB of Memory
+            memory: vec![0_u8; 0x10000], // 65 KB of Memory
+            io_port: IOPort::new()
         }
     }
 
