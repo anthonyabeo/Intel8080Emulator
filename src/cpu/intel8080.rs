@@ -734,11 +734,12 @@ impl Intel8080 {
                     }
                 }
                 0xDB => { 
-                    // INSTRUCTION: IN exp
+                    // INSTRUCTION: IN port
                     // DESCRIPTION:
                     //      An eight-bit data byte is read from input device 
-                    //     number exp and replaces the contents of the accumulator
-
+                    //     number port and replaces the contents of the accumulator
+                    
+                    let port = self.memory[self.pc+1];
                     self.pc += 1; 
                 }
                 0xDC => {
