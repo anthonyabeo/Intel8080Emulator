@@ -53,29 +53,3 @@ impl Register {
         }
     }
 }
-
-pub struct IOPort {
-    pub read_1: u8,
-    pub read_2: u8,
-    pub read_3: u8,
-    pub write_2: u8,
-    pub write_3: u8,
-    pub write_4: u8,
-    pub write_5: u8,
-    pub write_6: u8,
-}
-
-impl IOPort {
-    pub fn new() -> IOPort {
-        IOPort {
-            read_1: 0_u8,
-            read_2: 0_u8,
-            read_3: 0_u8,
-            write_2: 0_u8,
-            write_3: 0_u8,
-            write_4: 0_u8,
-            write_5: 0_u8,
-            write_6: 0_u8
-        }
-    }
-}
