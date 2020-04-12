@@ -5,6 +5,4 @@ authors = ["Abeo Anthony, A. <anthonyabeo@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-sfml = "0.14.0"
-bit-array = "0.4.3"
-typenum = "1.11.2"
+sdl2 = "0.33.0"
