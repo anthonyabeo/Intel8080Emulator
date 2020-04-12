@@ -2,9 +2,10 @@ use std::fs::File;
 use std::path::Path;
 use std::io::Read;
 
-use crate::cpu::{ConditionFlags, Register, IOPort};
+use crate::cpu::{ConditionFlags, Register};
 use crate::cpu::utils::*;
 use crate::cpu::instructions::*;
+use crate::space_invaders::SpaceInvadersMachine;
 
 
 pub struct Intel8080 {
@@ -14,7 +15,6 @@ pub struct Intel8080 {
     pub sp: usize,
     pub int_enable: u8,
     pub memory: Vec<u8>,
-    pub io_port: IOPort
 }
 
 impl Intel8080 {
@@ -26,7 +26,6 @@ impl Intel8080 {
             sp: 0_usize,
             int_enable: 0,
             memory: vec![0_u8; 0x10000], // 65 KB of Memory
-            io_port: IOPort::new()
         }
     }
 
@@ -39,7 +38,7 @@ impl Intel8080 {
         f.read(&mut self.memory).unwrap();
     }
     
-    pub fn run(&mut self) {
+    pub fn run(&mut self, machine: &mut SpaceInvadersMachine) {
         while self.memory[self.pc] != 0x76 { // while opcode != HLT (0x76)
             match self.memory[self.pc] {
                 0x00 => { self.pc += 1; } // NOP
@@ -674,7 +673,8 @@ impl Intel8080 {
                     // DESCRIPTION:
                     //      The contents of the accumulator are sent to output 
                     //      device number exp
-
+                    let port = self.memory[self.pc+1];
+                    machine.write_out(port, self.regs.a);
                     self.pc += 1; 
                 }
                 0xD4 => {
@@ -740,6 +740,7 @@ impl Intel8080 {
                     //     number port and replaces the contents of the accumulator
                     
                     let port = self.memory[self.pc+1];
+                    self.regs.a = machine.read_in(port);
                     self.pc += 1; 
                 }
                 0xDC => {
