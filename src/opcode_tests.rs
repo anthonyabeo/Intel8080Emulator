@@ -1,7 +1,10 @@
 use crate::cpu::intel8080::Intel8080;
+use crate::space_invaders::SpaceInvadersMachine;
+
 
 #[test]
 fn emulate_opcodes_1_and_2 () {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.regs.a = 255;
     machine.memory = vec![
@@ -13,15 +16,18 @@ fn emulate_opcodes_1_and_2 () {
         0, 0, 0, 0, 0
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.b, 0);
     assert_eq!(machine.regs.c, 10);
+
+    machine.run(&mut _space_invaders);
     assert_eq!(machine.memory[10], 255);
 }
 
 #[test]
 fn emulate_opcodes_3() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.memory = vec![
         1, // LXI B
@@ -32,14 +38,16 @@ fn emulate_opcodes_3() {
         0, 0, 0, 0, 0
     ];
 
-    machine.run();
-
+    machine.run(&mut _space_invaders);
+    machine.run(&mut _space_invaders);
+    
     assert_eq!(machine.regs.b, 0x39);
     assert_eq!(machine.regs.c, 0x00);
 }
 
 #[test]
 fn emulate_opcodes_4_0x0c_5_0x0d_6_0x0e() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     // opcode 4
     let mut machine = Intel8080::new();
     machine.regs.b = 0x99;
@@ -48,7 +56,7 @@ fn emulate_opcodes_4_0x0c_5_0x0d_6_0x0e() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.b, 0x9A);
     assert_eq!(machine.flags.zero, 0);
@@ -63,7 +71,7 @@ fn emulate_opcodes_4_0x0c_5_0x0d_6_0x0e() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.c, 0x9A);
     assert_eq!(machine.flags.zero, 0);
@@ -78,7 +86,7 @@ fn emulate_opcodes_4_0x0c_5_0x0d_6_0x0e() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.b, 0x07);
     assert_eq!(machine.flags.zero, 0);
@@ -93,7 +101,7 @@ fn emulate_opcodes_4_0x0c_5_0x0d_6_0x0e() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.c, 0x07);
     assert_eq!(machine.flags.zero, 0);
@@ -108,7 +116,7 @@ fn emulate_opcodes_4_0x0c_5_0x0d_6_0x0e() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.b, 45);
 
@@ -120,13 +128,14 @@ fn emulate_opcodes_4_0x0c_5_0x0d_6_0x0e() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.c, 45);
 }
 
 #[test]
 fn emulate_opcode_7_0x0f() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.regs.a = 0xf2;
     machine.memory = vec![
@@ -134,7 +143,7 @@ fn emulate_opcode_7_0x0f() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.a, 0xe5);
     assert_eq!(machine.flags.carry, 1);
@@ -147,7 +156,7 @@ fn emulate_opcode_7_0x0f() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.a, 0x79);
     assert_eq!(machine.flags.carry, 0);
@@ -159,7 +168,7 @@ fn emulate_opcode_7_0x0f() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.a, 0xf9);
     assert_eq!(machine.flags.carry, 1);
@@ -167,6 +176,7 @@ fn emulate_opcode_7_0x0f() {
 
 #[test]
 fn emulate_9() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.regs.b = 0x33;
     machine.regs.c = 0x9f;
@@ -178,7 +188,7 @@ fn emulate_9() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.h, 0xd5);
     assert_eq!(machine.regs.l, 0x1a);
@@ -195,7 +205,7 @@ fn emulate_9() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.h, 0x00);
     assert_eq!(machine.regs.l, 0x00);
@@ -205,6 +215,7 @@ fn emulate_9() {
 
 #[test]
 fn emulate_opcode_0a_and_0b() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.regs.b = 0x00;
     machine.regs.c = 0x05;
@@ -216,7 +227,7 @@ fn emulate_opcode_0a_and_0b() {
         0x34
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.a, 0x34);
 
@@ -229,7 +240,7 @@ fn emulate_opcode_0a_and_0b() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.b, 0);
     assert_eq!(machine.regs.c, 4);
@@ -237,6 +248,7 @@ fn emulate_opcode_0a_and_0b() {
 
 #[test]
 fn emulate_opcode_0x17() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.regs.a = 0xb5;
     machine.memory = vec![
@@ -244,7 +256,7 @@ fn emulate_opcode_0x17() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.a, 0x6a);
     assert_eq!(machine.flags.carry, 1);
@@ -257,7 +269,7 @@ fn emulate_opcode_0x17() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.a, 0xea);
     assert_eq!(machine.flags.carry, 1);
@@ -265,6 +277,7 @@ fn emulate_opcode_0x17() {
 
 #[test]
 fn emulate_0x1f() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.regs.a = 0x6a;
     machine.flags.carry = 1;
@@ -273,7 +286,7 @@ fn emulate_0x1f() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.a, 0xb5);
     assert_eq!(machine.flags.carry, 0);
@@ -282,6 +295,7 @@ fn emulate_0x1f() {
 #[test]
 fn emulate_shld() {
     // opcode SHLD
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.regs.h = 0xae;
     machine.regs.l = 0x29;
@@ -295,7 +309,7 @@ fn emulate_shld() {
         0
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.memory[4], 0x29);
     assert_eq!(machine.memory[5], 0xae);
@@ -314,7 +328,7 @@ fn emulate_shld() {
         0xae
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.l, 0x29);
     assert_eq!(machine.regs.h, 0xae);
@@ -322,6 +336,7 @@ fn emulate_shld() {
 
 #[test]
 fn emulate_cma() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.regs.a = 0x51;
 
@@ -330,13 +345,14 @@ fn emulate_cma() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
     
     assert_eq!(machine.regs.a, 0xae);
 }
 
 #[test]
 fn emulate_daa() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.regs.a = 0x9b;
 
@@ -345,7 +361,7 @@ fn emulate_daa() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.a, 1);
     assert_eq!(machine.flags.carry, 1);
@@ -357,6 +373,7 @@ fn emulate_daa() {
 
 #[test]
 fn emulate_sta() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.regs.a = 0x9b;
 
@@ -367,13 +384,14 @@ fn emulate_sta() {
         0
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.memory[4], machine.regs.a);
 }
 
 #[test]
 fn emulate_add() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.regs.a = 0x6c;
     machine.regs.b = 0x2e;
@@ -383,7 +401,7 @@ fn emulate_add() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.a, 0x9a);
     assert_eq!(machine.flags.sign, 1);
@@ -394,6 +412,7 @@ fn emulate_add() {
 
 #[test]
 fn emulate_adc() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.flags.carry = 0;
     machine.regs.a = 0x42;
@@ -404,7 +423,7 @@ fn emulate_adc() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.a, 0x7f);
     assert_eq!(machine.flags.sign, 0);
@@ -422,7 +441,7 @@ fn emulate_adc() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.a, 0x80);
     assert_eq!(machine.flags.sign, 1);
@@ -433,6 +452,7 @@ fn emulate_adc() {
 
 #[test]
 fn emulate_sub() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.regs.a = 0x3e;
     machine.regs.b = 0x3e;
@@ -442,7 +462,7 @@ fn emulate_sub() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.a, 0x00);
     assert_eq!(machine.flags.sign, 0);
@@ -453,6 +473,7 @@ fn emulate_sub() {
 
 #[test]
 fn emulate_sbb() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.regs.a = 0x04;
     machine.regs.b = 0x02;
@@ -463,7 +484,7 @@ fn emulate_sbb() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.a, 0x01);
     assert_eq!(machine.flags.sign, 0);
@@ -474,6 +495,7 @@ fn emulate_sbb() {
 
 #[test]
 fn emulate_ana() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.regs.a = 0xfc;
     machine.regs.b = 0x0f;
@@ -483,7 +505,7 @@ fn emulate_ana() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.a, 0x0c);
     assert_eq!(machine.flags.sign, 0);
@@ -494,6 +516,7 @@ fn emulate_ana() {
 
 #[test]
 fn emulate_xra() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.regs.a = 0x5c;
     machine.regs.b = 0x78;
@@ -503,7 +526,7 @@ fn emulate_xra() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.a, 0x24);
     assert_eq!(machine.flags.sign, 0);
@@ -514,6 +537,7 @@ fn emulate_xra() {
 
 #[test]
 fn emulate_ora() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.regs.a = 0x33;
     machine.regs.b = 0x0f;
@@ -523,7 +547,7 @@ fn emulate_ora() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.a, 0x3f);
     assert_eq!(machine.flags.sign, 0);
@@ -534,6 +558,7 @@ fn emulate_ora() {
 
 #[test]
 fn emulate_cmp() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.regs.a = 0x0a;
     machine.regs.b = 0x05;
@@ -543,7 +568,7 @@ fn emulate_cmp() {
         0x76
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.a, 0x05);
     assert_eq!(machine.flags.sign, 0);
@@ -554,6 +579,7 @@ fn emulate_cmp() {
 
 #[test]
 fn emulate_pop() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.sp = 0x05;
 
@@ -563,7 +589,7 @@ fn emulate_pop() {
         0, 0, 0, 0xae, 0x2b 
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.regs.c, 0xae);
     assert_eq!(machine.regs.b, 0x2b);
@@ -572,6 +598,7 @@ fn emulate_pop() {
 
 #[test]
 fn emulate_rnz() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.flags.zero = 0;
     machine.sp = 0x05;
@@ -582,7 +609,7 @@ fn emulate_rnz() {
         0x76, 0x04, 0x00, 0
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.pc, 0x04);
     assert_eq!(machine.sp, 0x07);
@@ -590,6 +617,7 @@ fn emulate_rnz() {
 
 #[test]
 fn emulate_jnz() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.flags.zero = 0;
     machine.sp = 0x05;
@@ -600,27 +628,30 @@ fn emulate_jnz() {
         0x76, 0x04, 0x00, 0
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.pc, 0x04);
 }
 
 #[test]
 fn emulate_cnz() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.flags.zero = 0;
     machine.sp = 0x0B;
-
+    machine.pc = 0x05;
+    
     machine.memory = vec![
         0, 0, 0, 0, 0,
         0xc4,
-        0x08, 0x00, 0x76, 
+        0x08, 0x00, 0x0A, 
         0, 0, 0, 0
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.pc, 0x08);
+    assert_eq!(machine.memory[machine.pc], 0x0A);
     assert_eq!(machine.memory[10], 0x00);
     assert_eq!(machine.memory[9], 0x08);
     assert_eq!(machine.sp, 0x09);
@@ -628,6 +659,7 @@ fn emulate_cnz() {
 
 #[test]
 fn emulate_push() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.regs.b = 0x7b;
     machine.regs.c = 0x8c;
@@ -639,7 +671,7 @@ fn emulate_push() {
         0, 0, 0, 0
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.sp, 0x03);
     assert_eq!(machine.memory[4], 0x7b);
@@ -648,9 +680,11 @@ fn emulate_push() {
 
 #[test]
 fn emulate_rst() {
+    let mut _space_invaders = SpaceInvadersMachine::new();
     let mut machine = Intel8080::new();
     machine.pc = 0x03;
     machine.sp = 0x06;
+    machine.int_enable = 1;
 
     machine.memory = vec![
         0, 0, 0x76,
@@ -658,10 +692,10 @@ fn emulate_rst() {
         0, 0, 0,
     ];
 
-    machine.run();
+    machine.run(&mut _space_invaders);
 
     assert_eq!(machine.memory[5], 0x00);
     assert_eq!(machine.memory[4], 0x04);
-    assert_eq!(machine.pc, 0x02);
+    assert_eq!(machine.pc, 0x00);
     assert_eq!(machine.sp, 0x04);
 }
